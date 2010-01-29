@@ -12,8 +12,11 @@ Acora is 'fgrep' for Python, a fast multi-keyword text search engine.
 Based on a set of keywords, it generates a search automaton (DFA) and
 runs it over string input, either unicode or bytes.
 
-It is based on the Aho-Corasick algorithm and an NFA-to-DFA
-transformation.
+It is based on the Aho-Corasick algorithm and an NFA-to-DFA powerset
+construction.
+
+Acora comes with both a pure Python implementation and a fast binary module
+written in Cython.
 
 
 Features
@@ -27,6 +30,8 @@ Features
 * additional (slow but short) pure Python implementation
 * support for Python 2.5+ and 3.x
 * support for searching in files
+* permissive BSD license
+
 
 How do I use it?
 -----------------
