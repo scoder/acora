@@ -1,0 +1,4 @@
+exclude *.py
+include setup.py bench.py test.py
+include MANIFEST.in LICENSE.txt README.txt
+recursive-include acora *.py *.pyx *.c
