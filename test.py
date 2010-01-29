@@ -94,6 +94,33 @@ class AcoraTest(object):
             self._result([('A', 0), ('A', 1), ('B', 2), ('B', 3),
                           ('a', 0), ('a', 1), ('b', 2), ('b', 3)]))
 
+    def test_finditer_line_endings(self):
+        s = self._swrap
+        finditer = self._build_ignore_case('a', 'b', 'c', 'd', '\r', '\n').finditer
+
+        line = 0
+        line_matches = []
+        current_line_matches = []
+        last_ending = None
+        for kw, pos in finditer(s('Aa\r\nB\nbC\n\rcD\r\nd')):
+            if kw in '\r\n':
+                if last_ending == '\r' and kw == '\n':
+                    continue
+                line_matches.append(tuple(current_line_matches))
+                del current_line_matches[:]
+                last_ending = kw
+                line += 1
+            else:
+                last_ending = None
+                current_line_matches.append(kw)
+
+        line_matches.append(tuple(current_line_matches))
+
+        self.assertEquals(line, 5)
+        self.assertEquals(
+            line_matches,
+            [('a', 'a'), ('b',), ('b', 'c'), (), ('c', 'd'), ('d',)])
+
     def test_finditer_overlap(self):
         s = self._swrap
         finditer = self._build('a', 'ab', 'abc', 'abcd').finditer

@@ -301,7 +301,8 @@ def nfa2dfa(tree, ignore_case):
     # return start state and transitions
     return tree, transitions
 
-###
+
+### convenience functions
 
 def search(s, *keywords):
     """Convenience function to search a string for keywords.

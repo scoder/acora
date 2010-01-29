@@ -40,7 +40,7 @@ Collect some keywords::
     >>> builder = AcoraBuilder('ab', 'bc', 'de')
     >>> builder.add('a', 'b')
 
-Generate the Acora search engine::
+Generate the Acora search engine for the current keyword set::
 
     >>> ac = builder.build()
 
@@ -50,6 +50,67 @@ Search a string for all occurrences::
     [('a', 0), ('ab', 0), ('b', 1), ('bc', 1)]
     >>> ac.findall('abde')
     [('a', 0), ('ab', 0), ('b', 1), ('de', 2)]
+
+Iterate over the search results as they come in::
+
+    >>> for kw, pos in ac.finditer('abde'):
+    ...     print("%2s[%d]" % (kw, pos))
+     a[0]
+    ab[0]
+     b[1]
+    de[2]
+
+
+FAQs and recipes
+-----------------
+
+#) how do I run a greedy search for the longest matching keywords?
+
+    >>> builder = AcoraBuilder('a', 'ab', 'abc')
+    >>> ac = builder.build()
+
+    >>> from itertools import groupby
+    >>> from operator import itemgetter
+
+    >>> def longest_match(matches):
+    ...     for pos, match_set in groupby(matches, itemgetter(1)):
+    ...         yield max(match_set)
+
+    >>> for kw, pos in longest_match(ac.finditer('abbabc')):
+    ...     print kw
+    ab
+    abc
+
+#) how do I parse line-by-line, as fgrep does, but with arbitrary line endings?
+
+    >>> def group_by_lines(s, *keywords):
+    ...     builder = AcoraBuilder('\r', '\n', *keywords)
+    ...     ac = builder.build()
+    ...
+    ...     current_line_matches = []
+    ...     last_ending = None
+    ...
+    ...     for kw, pos in ac.finditer(s):
+    ...         if kw in '\r\n':
+    ...             if last_ending == '\r' and kw == '\n':
+    ...                 continue # combined CRLF
+    ...             yield tuple(current_line_matches)
+    ...             del current_line_matches[:]
+    ...             last_ending = kw
+    ...         else:
+    ...             last_ending = None
+    ...             current_line_matches.append(kw)
+    ...     yield tuple(current_line_matches)
+
+    >>> kwds = ['ab', 'bc', 'de']
+    >>> for matches in group_by_lines('a\r\r\nbc\r\ndede\n\nab', *kwds):
+    ...     print matches
+    ()
+    ()
+    ('bc',)
+    ('de', 'de')
+    ()
+    ('ab',)
 
 
 Changelog
