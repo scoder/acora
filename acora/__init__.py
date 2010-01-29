@@ -1,5 +1,26 @@
-"""Acora - a multi-keyword search engine based on Aho-Corasick trees
+"""\
+Acora - a multi-keyword search engine based on Aho-Corasick trees
 and NFA2DFA powerset construction.
+
+Usage::
+
+    >>> from acora import AcoraBuilder
+
+Collect some keywords::
+
+    >>> builder = AcoraBuilder('ab', 'bc', 'de')
+    >>> builder.add('a', 'b')
+
+Generate the Acora search engine::
+
+    >>> ac = builder.build()
+
+Search a string for all occurrences::
+
+    >>> ac.findall('abc')
+    [('a', 0), ('ab', 0), ('b', 1), ('bc', 1)]
+    >>> ac.findall('abde')
+    [('a', 0), ('ab', 0), ('b', 1), ('de', 2)]
 """
 
 try:
@@ -20,6 +41,10 @@ class PyAcora(object):
                 for ((state, char), target_state) in transitions.items() ])
 
     def finditer(self, s):
+        """Iterate over all occurrences of any keyword in the string.
+
+        Returns (keyword, offset) pairs.
+        """
         state = self.start_state
         start_state = (state, [])
         next_state = self.transitions.get
@@ -32,9 +57,17 @@ class PyAcora(object):
                     yield (match, pos-len(match))
 
     def findall(self, s):
+        """Find all occurrences of any keyword in the string.
+
+        Returns a list of (keyword, offset) pairs.
+        """
         return list(self.finditer(s))
 
     def filefind(self, f):
+        """Iterate over all occurrences of any keyword in a file.
+
+        Returns (keyword, offset) pairs.
+        """
         opened = False
         if not hasattr(f, 'read'):
             f = open(f, 'rb')
@@ -60,6 +93,10 @@ class PyAcora(object):
                 f.close()
 
     def filefindall(self, f):
+        """Find all occurrences of any keyword in a file.
+
+        Returns a list of (keyword, offset) pairs.
+        """
         return list(self.filefind(f))
 
 try:
@@ -165,14 +202,14 @@ def insert_keyword(tree, keyword, state_id):
 
 # NFA to DFA transformation
 
-def visit_all(tree, visitor):
-    visitor(tree)
-    for node in tree.values():
-        visit_all(node, visitor)
-
 def nfa2dfa(tree, ignore_case):
     """Transform a keyword tree into a DFA using powerset construction.
     """
+    def visit_all(tree, visitor):
+        visitor(tree)
+        for node in tree.values():
+            visit_all(node, visitor)
+
     states = []
     visit_all(tree, states.append)
     next_state_id = len(states)
@@ -267,9 +304,14 @@ def nfa2dfa(tree, ignore_case):
 ###
 
 def search(s, *keywords):
+    """Convenience function to search a string for keywords.
+    """
     acora  = AcoraBuilder(keywords).build()
     return acora.findall(s)
 
 def search_ignore_case(s, *keywords):
+    """Convenience function to search a string for keywords.  Case
+    insensitive version.
+    """
     acora  = AcoraBuilder(keywords).build(ignore_case=True)
     return acora.findall(s)

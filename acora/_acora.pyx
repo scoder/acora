@@ -1,3 +1,5 @@
+#cython: embedsignature=True
+
 """A fast C implementation of the Acora search engine.
 
 There are two main classes, UnicodeAcora and BytesAcora, that handle
@@ -128,6 +130,8 @@ cdef dict group_transitions_by_state(dict transitions):
 # unicode data handling
 
 cdef class UnicodeAcora:
+    """Acora search engine for unicode data.
+    """
     cdef _AcoraUnicodeNodeStruct* start_node
     cdef Py_ssize_t node_count
     cdef bint has_large_nodes
@@ -168,12 +172,16 @@ cdef class UnicodeAcora:
             python_mem.PyMem_Free(self.start_node)
 
     cpdef finditer(self, unicode data):
+        """Iterate over all occurrences of any keyword in the string.
+        """
         if self.has_large_nodes:
             return _BisectUnicodeAcoraIter(self, data)
         else:
             return _UnicodeAcoraIter(self, data)
 
     def findall(self, unicode data):
+        """Build a list of all occurrences of any keyword in the string.
+        """
         return list(self.finditer(data))
 
 cdef class _UnicodeAcoraIter:
@@ -301,6 +309,8 @@ cdef int _bisect(Py_UNICODE current_char, Py_UNICODE* characters, int char_count
 # bytes data handling
 
 cdef class BytesAcora:
+    """Acora search engine for byte data.
+    """
     cdef _AcoraBytesNodeStruct* start_node
     cdef Py_ssize_t node_count
     cdef tuple _pyrefs

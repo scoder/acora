@@ -1,6 +1,9 @@
 from distutils.core import setup
 from distutils.extension import Extension
 
+import sys
+import os.path
+
 try:
     from Cython.Distutils import build_ext
     cmdclass = {'build_ext': build_ext}
@@ -10,7 +13,7 @@ except ImportError:
     cmdclass = {}
     source_ext = 'c'
 
-version = "1.0"
+version = "1.1"
 
 setup(
     name = "acora",
@@ -24,22 +27,7 @@ setup(
 
     description="Fast multi-keyword search engine for text strings",
 
-    long_description="""\
-Acora is 'fgrep' for Python, a fast multi-keyword text search engine.
-
-Based on a set of keywords, it generates a search automaton (DFA) and
-runs it over string input, either unicode or bytes.
-
-Features include:
-
-* works with unicode strings and byte strings
-* about 2-3x as fast as Python's regular expression engine
-* finds overlapping matches, i.e. all matches of all keywords
-* support for case insensitive search (~10x as fast as 're')
-* frees the GIL while searching
-* additional (slow but short) pure Python implementation
-* support for Python 2.4+ and 3.x
-""",
+    long_description = open('README.txt').read(),
 
     classifiers = [
     'Intended Audience :: Developers',
@@ -47,7 +35,6 @@ Features include:
     'License :: OSI Approved :: BSD License',
     'Programming Language :: Cython',
     'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.4',
     'Programming Language :: Python :: 2.5',
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 3',
