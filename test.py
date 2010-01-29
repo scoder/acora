@@ -71,6 +71,13 @@ class AcoraTest(object):
             sorted(finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2), ('d', 3)]))
 
+    def test_finditer_redundant(self):
+        s = self._swrap
+        finditer = self._build('a', 'b', 'A', 'B').finditer
+        self.assertEquals(
+            sorted(finditer(s('AaBb'))),
+            self._result([('A', 0), ('B', 2), ('a', 1), ('b', 3)]))
+
     def test_finditer_ignore_case(self):
         s = self._swrap
         finditer = self._build_ignore_case('a', 'b', 'c', 'd').finditer
@@ -142,6 +149,7 @@ class PyAcoraTest(UnicodeAcoraTest, BytesAcoraTest):
 
 
 if __name__ == "__main__":
-    unittest.main()
     import doctest
     doctest.testmod()
+    doctest.testfile('README.txt')
+    unittest.main()
