@@ -71,6 +71,22 @@ class AcoraTest(object):
             sorted(finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2), ('d', 3)]))
 
+    def test_finditer_ignore_case(self):
+        s = self._swrap
+        finditer = self._build_ignore_case('a', 'b', 'c', 'd').finditer
+        self.assertEquals(
+            sorted(finditer(s('AaBbCcDd'))),
+            self._result([('a', 0), ('a', 1), ('b', 2), ('b', 3),
+                          ('c', 4), ('c', 5), ('d', 6), ('d', 7)]))
+
+    def test_finditer_ignore_case_redundant(self):
+        s = self._swrap
+        finditer = self._build_ignore_case('a', 'b', 'A', 'B').finditer
+        self.assertEquals(
+            sorted(finditer(s('AaBb'))),
+            self._result([('A', 0), ('A', 1), ('B', 2), ('B', 3),
+                          ('a', 0), ('a', 1), ('b', 2), ('b', 3)]))
+
     def test_finditer_overlap(self):
         s = self._swrap
         finditer = self._build('a', 'ab', 'abc', 'abcd').finditer
