@@ -129,6 +129,10 @@ FAQs and recipes
 Changelog
 ----------
 
+* 1.3 [2009-01-30]
+
+  - major fix for file search
+
 * 1.2 [2009-01-30]
 
   - deep-copy support for AcoraBuilder class

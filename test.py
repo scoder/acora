@@ -205,17 +205,58 @@ class BytesAcoraTest(unittest.TestCase, AcoraTest):
     # only byte data tests
     from acora import BytesAcora as acora
 
+    simple_data = 'abc' + ('a'*100+'b'*100)*1000 + 'abcde'
+    simple_kwds = ['abc'.encode('ASCII'),
+                   'abcde'.encode('ASCII')]
+    last_match_pos = len(simple_data) - 5
+    expected_result = [(simple_kwds[0], 0),
+                       (simple_kwds[0], last_match_pos),
+                       (simple_kwds[1], last_match_pos)]
+
     def _swrap(self, s):
         if isinstance(s, unicode):
             s = s.encode('utf-8')
         return s
 
-    def test_filelike_searching(self):
-        data = BytesIO(self.search_string)
+    def _search_in_file(self, ac, data):
+        import tempfile
+        tmp = tempfile.TemporaryFile()
+        try:
+            tmp.write(data.encode('ASCII'))
+            tmp.seek(0)
+            return list(ac.filefind(tmp))
+        finally:
+            tmp.close()
+
+    def test_large_filelike_searching(self):
         filefind = self._build('SADHFCAL'.encode('ASCII'),
                                'bdeg'.encode('ASCII')).filefind
+        data = BytesIO(self.search_string)
+        result = list(filefind(data))
+        self.assertEquals(len(result), 6000)
 
-        self.assertEquals(len(list(filefind(data))), 6000)
+    def test_large_filelike_searching_check(self):
+        ac = self._build(*self.simple_kwds)
+        data = BytesIO(self.simple_data)
+        result = list(ac.filefind(data))
+        self.assertEquals(result, self.expected_result)
+
+    def test_file_searching(self):
+        ac = self._build([ kw.encode('ASCII')
+                           for kw in ('a', 'b', 'ab', 'abc') ])
+        result = self._search_in_file(ac, 'abbabc')
+        self.assertEquals(len(result), 8)
+
+    def test_large_file_searching(self):
+        ac = self._build('SADHFCAL'.encode('ASCII'),
+                         'bdeg'.encode('ASCII'))
+        result = self._search_in_file(ac, self.search_string)
+        self.assertEquals(len(result), 6000)
+
+    def test_large_file_searching_check(self):
+        ac = self._build(*self.simple_kwds)
+        result = self._search_in_file(ac, self.simple_data)
+        self.assertEquals(result, self.expected_result)
 
 
 class PyAcoraTest(UnicodeAcoraTest, BytesAcoraTest):
