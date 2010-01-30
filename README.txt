@@ -74,6 +74,14 @@ FAQs and recipes
     >>> builder = AcoraBuilder('a', 'ab', 'abc')
     >>> ac = builder.build()
 
+    >>> for kw, pos in ac.finditer('abbabc'):
+    ...     print(kw)
+    a
+    ab
+    a
+    ab
+    abc
+
     >>> from itertools import groupby
     >>> from operator import itemgetter
 
