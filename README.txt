@@ -132,6 +132,7 @@ Changelog
 * 1.3 [2009-01-30]
 
   - major fix for file search
+  - built using Cython 0.12.1 (beta0)
 
 * 1.2 [2009-01-30]
 
