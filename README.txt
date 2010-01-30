@@ -82,7 +82,7 @@ FAQs and recipes
     ...         yield max(match_set)
 
     >>> for kw, pos in longest_match(ac.finditer('abbabc')):
-    ...     print kw
+    ...     print(kw)
     ab
     abc
 
@@ -109,7 +109,7 @@ FAQs and recipes
 
     >>> kwds = ['ab', 'bc', 'de']
     >>> for matches in group_by_lines('a\r\r\nbc\r\ndede\n\nab', *kwds):
-    ...     print matches
+    ...     print(matches)
     ()
     ()
     ('bc',)

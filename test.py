@@ -9,14 +9,40 @@ import sys
 import unittest
 import codecs
 
+# compat stuff ...
+
 try:
     unicode
 except NameError:
     unicode = str
 
+try:
+    bytes
+except NameError:
+    bytes = str
+
+try:
+    # Python 2.6+
+    from io import StringIO as _StringIO, BytesIO as _BytesIO
+except ImportError:
+    # Python 2
+    from StringIO import StringIO as _StringIO
+    _BytesIO = _StringIO
+
+def BytesIO(*args):
+    if args and isinstance(args[0], unicode):
+        args = (args[0].encode("UTF-8"),)
+    return _BytesIO(*args)
+
+def StringIO(*args):
+    if args and isinstance(args[0], bytes):
+        args = (args[0].decode("UTF-8"),)
+    return _BytesIO(*args)
+
 unicode_unescaper = codecs.lookup("unicode_escape")
 def unescape_unicode(s):
     return unicode_unescaper.decode(s)[0]
+
 
 def prepare_test_data():
     s = ('bdfdaskdjfhaslkdhfsadhfklashdflabcasdabcdJAKHDBVDFLNFCBLSADHFCALKSJ'
@@ -78,21 +104,29 @@ class AcoraTest(object):
             sorted(finditer(s('AaBb'))),
             self._result([('A', 0), ('B', 2), ('a', 1), ('b', 3)]))
 
-    def test_finditer_ignore_case(self):
+    def test_finditer_overlap(self):
         s = self._swrap
-        finditer = self._build_ignore_case('a', 'b', 'c', 'd').finditer
+        finditer = self._build('a', 'ab', 'abc', 'abcd').finditer
         self.assertEquals(
-            sorted(finditer(s('AaBbCcDd'))),
-            self._result([('a', 0), ('a', 1), ('b', 2), ('b', 3),
-                          ('c', 4), ('c', 5), ('d', 6), ('d', 7)]))
+            sorted(finditer(s('abcd'))),
+            self._result([('a', 0), ('ab', 0), ('abc', 0), ('abcd', 0)]))
 
-    def test_finditer_ignore_case_redundant(self):
+    def test_finditer_reverse_overlap(self):
         s = self._swrap
-        finditer = self._build_ignore_case('a', 'b', 'A', 'B').finditer
+        finditer = self._build('d', 'cd', 'bcd', 'abcd').finditer
         self.assertEquals(
-            sorted(finditer(s('AaBb'))),
-            self._result([('A', 0), ('A', 1), ('B', 2), ('B', 3),
-                          ('a', 0), ('a', 1), ('b', 2), ('b', 3)]))
+            sorted(finditer(s('abcd'))),
+            self._result([('abcd', 0), ('bcd', 1), ('cd', 2), ('d', 3)]))
+
+
+class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
+    # only unicode data tests
+    from acora import UnicodeAcora as acora
+
+    def _swrap(self, s):
+        if not isinstance(s, unicode):
+            s = s.decode('utf-8')
+        return unescape_unicode(s)
 
     def test_finditer_line_endings(self):
         s = self._swrap
@@ -121,38 +155,28 @@ class AcoraTest(object):
             line_matches,
             [('a', 'a'), ('b',), ('b', 'c'), (), ('c', 'd'), ('d',)])
 
-    def test_finditer_overlap(self):
-        s = self._swrap
-        finditer = self._build('a', 'ab', 'abc', 'abcd').finditer
-        self.assertEquals(
-            sorted(finditer(s('abcd'))),
-            self._result([('a', 0), ('ab', 0), ('abc', 0), ('abcd', 0)]))
-
-    def test_finditer_reverse_overlap(self):
-        s = self._swrap
-        finditer = self._build('d', 'cd', 'bcd', 'abcd').finditer
-        self.assertEquals(
-            sorted(finditer(s('abcd'))),
-            self._result([('abcd', 0), ('bcd', 1), ('cd', 2), ('d', 3)]))
-
-    # unicode tests
-
-
-class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
-    # only unicode data tests
-    from acora import UnicodeAcora as acora
-
-    def _swrap(self, s):
-        if not isinstance(s, unicode):
-            s = s.decode('utf-8')
-        return unescape_unicode(s)
-
     def test_finditer_single_keyword_unicode(self):
         s = self._swrap
         finditer = self._build(unicode("\\uF8D2")).finditer
         self.assertEquals(
             list(finditer(s(unicode("\\uF8D1\\uF8D2\\uF8D3")))),
             self._result([(unicode("\\uF8D2"), 1)]))
+
+    def test_finditer_ignore_case(self):
+        s = self._swrap
+        finditer = self._build_ignore_case('a', 'b', 'c', 'd').finditer
+        self.assertEquals(
+            sorted(finditer(s('AaBbCcDd'))),
+            self._result([('a', 0), ('a', 1), ('b', 2), ('b', 3),
+                          ('c', 4), ('c', 5), ('d', 6), ('d', 7)]))
+
+    def test_finditer_ignore_case_redundant(self):
+        s = self._swrap
+        finditer = self._build_ignore_case('a', 'b', 'A', 'B').finditer
+        self.assertEquals(
+            sorted(finditer(s('AaBb'))),
+            self._result([('A', 0), ('A', 1), ('B', 2), ('B', 3),
+                          ('a', 0), ('a', 1), ('b', 2), ('b', 3)]))
 
 
 class BytesAcoraTest(unittest.TestCase, AcoraTest):
@@ -163,6 +187,13 @@ class BytesAcoraTest(unittest.TestCase, AcoraTest):
         if isinstance(s, unicode):
             s = s.encode('utf-8')
         return s
+
+    def test_filelike_searching(self):
+        data = BytesIO(self.search_string)
+        filefind = self._build('SADHFCAL'.encode('ASCII'),
+                               'bdeg'.encode('ASCII')).filefind
+
+        self.assertEquals(len(list(filefind(data))), 6000)
 
 
 class PyAcoraTest(UnicodeAcoraTest, BytesAcoraTest):
