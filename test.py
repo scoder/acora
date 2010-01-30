@@ -225,8 +225,19 @@ class PyAcoraTest(UnicodeAcoraTest, BytesAcoraTest):
         return s
 
 
-if __name__ == "__main__":
+def suite():
     import doctest
-    doctest.testmod()
-    doctest.testfile('README.txt')
-    unittest.main()
+    suite = unittest.TestSuite([
+            unittest.makeSuite(UnicodeAcoraTest),
+            unittest.makeSuite(BytesAcoraTest),
+            unittest.makeSuite(PyAcoraTest),
+            doctest.DocTestSuite(),
+            doctest.DocFileSuite('README.txt'),
+            ])
+    return suite
+
+if __name__ == "__main__":
+    import sys
+    args = sys.argv[1:]
+    verbosity = min(2, args.count('-v') + args.count('-vv')*2)
+    unittest.TextTestRunner(verbosity=verbosity).run(suite())
