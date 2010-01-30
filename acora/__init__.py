@@ -186,6 +186,19 @@ class NfaState(dict):
         return str(self.id)
     __repr__ = __str__
 
+    def __copy__(self):
+        state = NfaState(self.id, **self)
+        state.matches[:] = self.matches
+        return state
+
+    def __deepcopy__(self, memo):
+        state = NfaState(
+            self.id,
+            [ (char, state.__deepcopy__(None))
+              for char, state in self.items() ])
+        state.matches[:] = self.matches
+        return state
+
 def insert_keyword(tree, keyword, state_id):
     if not keyword:
         raise ValueError("cannot search for the empty string")

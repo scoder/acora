@@ -118,6 +118,25 @@ class AcoraTest(object):
             sorted(finditer(s('abcd'))),
             self._result([('abcd', 0), ('bcd', 1), ('cd', 2), ('d', 3)]))
 
+    def test_deepcopy_builder(self):
+        from copy import deepcopy
+        s = self._swrap
+
+        builder1 = acora.AcoraBuilder(*list(map(s, ['a', 'b', 'c'])))
+        builder2 = deepcopy(builder1)
+        builder2.add(s('ab'), s('bc'))
+        
+        finditer1 = builder1.build(acora=self.acora).finditer
+        finditer2 = builder2.build(acora=self.acora).finditer
+
+        self.assertEquals(
+            sorted(finditer1(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2)]))
+
+        self.assertEquals(
+            sorted(finditer2(s('abcd'))),
+            self._result([('a', 0), ('ab', 0), ('b', 1), ('bc', 1), ('c', 2)]))
+        
 
 class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
     # only unicode data tests
