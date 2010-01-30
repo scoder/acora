@@ -6,6 +6,8 @@ There are two main classes, UnicodeAcora and BytesAcora, that handle
 byte data and unicode data respectively.
 """
 
+__all__ = ['BytesAcora', 'UnicodeAcora']
+
 cimport stdio
 cimport python_exc
 cimport python_mem
@@ -141,7 +143,7 @@ cdef class UnicodeAcora:
         cdef _AcoraUnicodeNodeStruct* c_nodes
         cdef Py_ssize_t i
         self.start_node = NULL
-        transitions_by_state = group_transitions_by_state(transitions)
+        cdef dict transitions_by_state = group_transitions_by_state(transitions)
 
         self.node_count = len(transitions_by_state)
         c_nodes = self.start_node = <_AcoraUnicodeNodeStruct*> python_mem.PyMem_Malloc(
@@ -155,7 +157,7 @@ cdef class UnicodeAcora:
 
         node_offsets = dict([ (state, i) for i,state in enumerate(transitions_by_state) ])
         pyrefs = {} # used to keep Python references alive (and intern them)
-        for i, (state, state_transitions) in enumerate(transitions_by_state.items()):
+        for i, (state, state_transitions) in enumerate(transitions_by_state.iteritems()):
             if len(state_transitions) >= MIN_TRANSITIONS_TO_BISECT:
                 self.has_large_nodes = True
             _init_unicode_node(&c_nodes[i], state, state_transitions,
@@ -319,7 +321,7 @@ cdef class BytesAcora:
         cdef _AcoraBytesNodeStruct* c_nodes
         cdef Py_ssize_t i
         self.start_node = NULL
-        transitions_by_state = group_transitions_by_state(transitions)
+        cdef dict transitions_by_state = group_transitions_by_state(transitions)
 
         self.node_count = len(transitions_by_state)
         c_nodes = self.start_node = <_AcoraBytesNodeStruct*> python_mem.PyMem_Malloc(
@@ -333,7 +335,7 @@ cdef class BytesAcora:
 
         node_offsets = dict([ (state, i) for i,state in enumerate(transitions_by_state) ])
         pyrefs = {} # used to keep Python references alive (and intern them)
-        for i, (state, state_transitions) in enumerate(transitions_by_state.items()):
+        for i, (state, state_transitions) in enumerate(transitions_by_state.iteritems()):
             _init_bytes_node(&c_nodes[i], state, state_transitions,
                              c_nodes, node_offsets, pyrefs)
 

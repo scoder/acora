@@ -100,7 +100,7 @@ class PyAcora(object):
         return list(self.filefind(f))
 
 try:
-    from _acora import UnicodeAcora, BytesAcora
+    from acora._acora import UnicodeAcora, BytesAcora
 except ImportError:
     # C module not there ...
     UnicodeAcora = BytesAcora = PyAcora
