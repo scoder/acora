@@ -1,6 +1,8 @@
 #!/bin/bash
 
-for pyver in 2.5 2.6 3.0 3.1
+FAILED=
+
+for pyver in 2.5 2.6 3.0 3.1 3.2
 do
     which python${pyver} >/dev/null || continue
     echo "Running tests with Python $pyver ..."
@@ -9,5 +11,7 @@ do
     [ -z "${pyver##2.*}" ] && _CFLAGS="$_CFLAGS -fno-strict-aliasing"
     CFLAGS="$_CFLAGS" PYTHONPATH=~/source/Python/cython/cython-work \
 	python${pyver} setup.py build_ext -i
-    python${pyver} test.py -v
+    python${pyver} test.py || FAILED="$FAILED $pyver"
 done
+
+[ -n "$FAILED" ] && echo "FAILED: $FAILED" || echo "DONE."
