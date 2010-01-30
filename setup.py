@@ -13,7 +13,7 @@ except ImportError:
     cmdclass = {}
     source_ext = 'c'
 
-version = "1.1"
+version = "1.2"
 
 setup(
     name = "acora",
@@ -38,6 +38,7 @@ setup(
     'Programming Language :: Python :: 2.5',
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.0',
     'Programming Language :: Python :: 3.1',
     'Operating System :: OS Independent',
     'Topic :: Text Processing',

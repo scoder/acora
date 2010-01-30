@@ -129,7 +129,19 @@ FAQs and recipes
 Changelog
 ----------
 
+* 1.2 [2009-01-30]
+
+  - deep-copy support for AcoraBuilder class
+  - doc/test fixes
+  - include .hg repo in source distribution
+  - built using Cython 0.12.1 (beta0)
+
 * 1.1 [2009-01-29]
-  doc updates, some cleanup, built using Cython 0.12.1
+
+  - doc updates
+  - some cleanup
+  - built using Cython 0.12.1 (beta0)
+
 * 1.0 [2009-01-29]
-  initial release
+
+  - initial release
