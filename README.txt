@@ -1,7 +1,7 @@
 Acora
 ======
 
-Author: Stefan Behnel
+:Author: Stefan Behnel
 
 
 What is Acora?
