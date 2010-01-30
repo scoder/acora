@@ -1,8 +1,10 @@
 #!/bin/bash
 
+[ -z "$1" ] && VERSIONS="2.5 2.6 3.0 3.1 3.2" || VERSIONS="$1"
+
 FAILED=
 
-for pyver in 2.5 2.6 3.0 3.1 3.2
+for pyver in $VERSIONS
 do
     which python${pyver} >/dev/null || continue
     echo "Running tests with Python $pyver ..."
