@@ -4,6 +4,9 @@ Simple test suite for acora.
 
 import acora
 
+if acora.BytesAcora is acora.PyAcora or acora.UnicodeAcora is acora.PyAcora:
+    print("WARNING: '_acora' C extension not imported, only testing Python implementation")
+
 import re
 import sys
 import unittest
