@@ -40,6 +40,7 @@ setup(
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.0',
     'Programming Language :: Python :: 3.1',
+    'Programming Language :: Python :: 3.2',
     'Operating System :: OS Independent',
     'Topic :: Text Processing',
     ],
