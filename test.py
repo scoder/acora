@@ -11,6 +11,7 @@ import re
 import sys
 import unittest
 import codecs
+import string
 
 # compat stuff ...
 
@@ -92,6 +93,13 @@ class AcoraTest(object):
         self.assertEquals(
             sorted(finditer(s('abcd'))),
             self._result([('bc', 1)]))
+
+    def test_finditer_many_keywords(self):
+        s = self._swrap
+        finditer = self._build(*string.ascii_letters).finditer
+        self.assertEquals(
+            sorted(finditer(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2), ('d', 3)]))
 
     def test_finditer_sequential(self):
         s = self._swrap
