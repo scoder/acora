@@ -16,10 +16,9 @@ from python_version cimport PY_MAJOR_VERSION
 from python_unicode cimport Py_UNICODE, PyUnicode_AS_UNICODE, PyUnicode_GET_SIZE
 
 cdef extern from * nogil:
-     ctypedef Py_ssize_t ssize_t
-     ssize_t read(int fd, void *buf, size_t count)
+    ctypedef Py_ssize_t ssize_t
+    ssize_t read(int fd, void *buf, size_t count)
 
-DEF MIN_TRANSITIONS_TO_BISECT = 20
 DEF FILE_BUFFER_SIZE = 32 * 1024
 
 ctypedef struct _AcoraUnicodeNodeStruct:
@@ -136,7 +135,6 @@ cdef class UnicodeAcora:
     """
     cdef _AcoraUnicodeNodeStruct* start_node
     cdef Py_ssize_t node_count
-    cdef bint has_large_nodes
     cdef tuple _pyrefs
 
     def __cinit__(self, start_state, dict transitions):
@@ -158,8 +156,6 @@ cdef class UnicodeAcora:
         node_offsets = dict([ (state, i) for i,state in enumerate(transitions_by_state) ])
         pyrefs = {} # used to keep Python references alive (and intern them)
         for i, (state, state_transitions) in enumerate(transitions_by_state.iteritems()):
-            if len(state_transitions) >= MIN_TRANSITIONS_TO_BISECT:
-                self.has_large_nodes = True
             _init_unicode_node(&c_nodes[i], state, state_transitions,
                                c_nodes, node_offsets, pyrefs)
 
@@ -176,10 +172,7 @@ cdef class UnicodeAcora:
     cpdef finditer(self, unicode data):
         """Iterate over all occurrences of any keyword in the string.
         """
-        if self.has_large_nodes:
-            return _BisectUnicodeAcoraIter(self, data)
-        else:
-            return _UnicodeAcoraIter(self, data)
+        return _UnicodeAcoraIter(self, data)
 
     def findall(self, unicode data):
         """Build a list of all occurrences of any keyword in the string.
@@ -249,63 +242,6 @@ cdef class _UnicodeAcoraIter:
         return (match,
                 <Py_ssize_t>(self.data_char - PyUnicode_AS_UNICODE(self.data)
                              ) - PyUnicode_GET_SIZE(match))
-
-cdef class _BisectUnicodeAcoraIter(_UnicodeAcoraIter):
-    def __next__(self):
-        cdef Py_UNICODE* data_char = self.data_char
-        cdef Py_UNICODE* data_end = self.data_end
-        cdef Py_UNICODE* test_chars
-        cdef Py_UNICODE current_char
-        cdef int i, found = 0
-        cdef _AcoraUnicodeNodeStruct* start_node = self.start_node
-        cdef _AcoraUnicodeNodeStruct* current_node = self.current_node
-        if current_node.matches is not NULL:
-            if current_node.matches[self.match_index] is not NULL:
-                return self._build_next_match()
-            self.match_index = 0
-        with nogil:
-            while data_char < data_end:
-                current_char = data_char[0]
-                data_char += 1
-                test_chars = current_node.characters
-                if current_char < test_chars[0] \
-                        or current_char > test_chars[current_node.char_count-1]:
-                    current_node = start_node
-                elif current_node.char_count >= MIN_TRANSITIONS_TO_BISECT:
-                    i = _bisect(current_char, current_node.characters, current_node.char_count)
-                    if i >= 0:
-                        current_node = current_node.targets[i]
-                    else:
-                        current_node = start_node
-                else:
-                    for i in range(current_node.char_count):
-                        if current_char == test_chars[i]:
-                            current_node = current_node.targets[i]
-                            break
-                    else:
-                        current_node = start_node
-                if current_node.matches is not NULL:
-                    found = 1
-                    break
-        self.data_char = data_char
-        self.current_node = current_node
-        if found:
-            return self._build_next_match()
-        raise StopIteration
-
-cdef int _bisect(Py_UNICODE current_char, Py_UNICODE* characters, int char_count) nogil:
-    cdef int start = 0, stop = char_count-1, mid = char_count // 2
-    while start < stop:
-        if current_char > characters[mid]:
-            start = mid + 1
-        elif current_char < characters[mid]:
-            stop = mid - 1
-        else:
-            return mid
-        mid = (start+stop) // 2
-    if start == stop and current_char == characters[start]:
-        return start
-    return -1
 
 
 # bytes data handling
