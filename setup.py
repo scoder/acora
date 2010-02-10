@@ -13,7 +13,7 @@ except ImportError:
     cmdclass = {}
     source_ext = 'c'
 
-version = "1.3"
+version = "1.4"
 
 setup(
     name = "acora",

@@ -23,7 +23,7 @@ Features
 ---------
 
 * works with unicode strings and byte strings
-* about 2-3x as fast as Python's regular expression engine
+* about 2-3x as fast as Python's regular expression engine for most input
 * finds overlapping matches, i.e. all matches of all keywords
 * support for case insensitive search (~10x as fast as 're')
 * frees the GIL while searching
@@ -128,6 +128,12 @@ FAQs and recipes
 
 Changelog
 ----------
+
+* 1.4 [2009-02-10]
+
+  - minor speed-up in inner search engine loop
+  - some code cleanup
+  - built using Cython 0.12.1 (final)
 
 * 1.3 [2009-01-30]
 
