@@ -101,6 +101,11 @@ class AcoraTest(object):
             sorted(finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2), ('d', 3)]))
 
+    def test_finditer_many_keywords_not_found(self):
+        s = self._swrap
+        finditer = self._build(*string.ascii_letters).finditer
+        self.assertEquals(sorted(finditer(s(string.digits*100))), [])
+
     def test_finditer_sequential(self):
         s = self._swrap
         finditer = self._build('a', 'b', 'c', 'd').finditer
