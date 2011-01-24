@@ -16,7 +16,8 @@ It is based on the Aho-Corasick algorithm and an NFA-to-DFA powerset
 construction.
 
 Acora comes with both a pure Python implementation and a fast binary module
-written in Cython.
+written in Cython. However, note that the current construction algorithm is
+not suitable for really large sets of keywords (i.e. thousands or more).
 
 
 Features
