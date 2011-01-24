@@ -134,6 +134,8 @@ Changelog
 * 1.5 [2011-01-24]
 
   - Cython compiled NFS-2-DFA construction runs substantially faster
+  - always build extension modules even if Cython is not installed
+  - ``--no-compile`` switch in ``setup.py`` to prevent extension module building
   - built using Cython 0.14.1 (rc2)
 
 * 1.4 [2009-02-10]

@@ -5,13 +5,20 @@ import sys
 import os.path
 
 try:
-    from Cython.Distutils import build_ext
-    cmdclass = {'build_ext': build_ext}
-    extensions = [Extension("acora._acora", ["acora/_acora.pyx"]),
-                  Extension("acora._nfa2dfa", ["acora/nfa2dfa.py"]),
-                  ]
-except ImportError:
-    build_ext = None
+    sys.argv.remove('--no-compile')
+except ValueError:
+    try:
+        from Cython.Distutils import build_ext
+        cmdclass = {'build_ext': build_ext}
+        extensions = [Extension("acora._acora", ["acora/_acora.pyx"]),
+                      Extension("acora._nfa2dfa", ["acora/nfa2dfa.py"]),
+                      ]
+    except ImportError:
+        cmdclass = {}
+        extensions = [Extension("acora._acora", ["acora/_acora.c"]),
+                      Extension("acora._nfa2dfa", ["acora/nfa2dfa.c"]),
+                      ]
+else:
     cmdclass = {}
     extensions = []
 
@@ -41,6 +48,7 @@ setup(
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.0',
     'Programming Language :: Python :: 3.1',
     'Programming Language :: Python :: 3.2',
     'Operating System :: OS Independent',
@@ -49,7 +57,7 @@ setup(
 
     # extension setup
 
-    cmdclass = {'build_ext': build_ext},
+    cmdclass = cmdclass,
     ext_modules = extensions,
     packages = ['acora'],
 )
