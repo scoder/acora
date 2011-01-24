@@ -7,11 +7,13 @@ import os.path
 try:
     from Cython.Distutils import build_ext
     cmdclass = {'build_ext': build_ext}
-    source_ext = 'pyx'
+    extensions = [Extension("acora._acora", ["acora/_acora.pyx"]),
+                  Extension("acora._nfa2dfa", ["acora/nfa2dfa.py"]),
+                  ]
 except ImportError:
     build_ext = None
     cmdclass = {}
-    source_ext = 'c'
+    extensions = []
 
 version = "1.4"
 
@@ -48,7 +50,6 @@ setup(
     # extension setup
 
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension("acora._acora",
-                             ["acora/_acora."+source_ext])],
+    ext_modules = extensions,
     packages = ['acora'],
 )
