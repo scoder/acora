@@ -15,9 +15,10 @@ runs it over string input, either unicode or bytes.
 It is based on the Aho-Corasick algorithm and an NFA-to-DFA powerset
 construction.
 
-Acora comes with both a pure Python implementation and a fast binary module
-written in Cython. However, note that the current construction algorithm is
-not suitable for really large sets of keywords (i.e. thousands or more).
+Acora comes with both a pure Python implementation and a fast binary
+module written in Cython. However, note that the current construction
+algorithm is not suitable for really large sets of keywords (i.e. more
+than a couple of thousand).
 
 
 Features
@@ -129,6 +130,11 @@ FAQs and recipes
 
 Changelog
 ----------
+
+* 1.5 [2011-01-24]
+
+  - Cython compiled NFS-2-DFA construction runs substantially faster
+  - built using Cython 0.14.1 (rc2)
 
 * 1.4 [2009-02-10]
 

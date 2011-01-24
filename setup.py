@@ -15,7 +15,7 @@ except ImportError:
     cmdclass = {}
     extensions = []
 
-version = "1.4"
+version = "1.5"
 
 setup(
     name = "acora",
