@@ -1,6 +1,6 @@
-exclude *.py *.txt *.sh
+exclude *.py *.txt
 include setup.py bench.py test.py
 include MANIFEST.in LICENSE.txt README.txt
 include testall.sh
 recursive-include acora *.py *.pyx *.c
-recursive-include .hg *
+graft .hg
