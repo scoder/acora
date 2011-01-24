@@ -8,12 +8,12 @@ byte data and unicode data respectively.
 
 __all__ = ['BytesAcora', 'UnicodeAcora']
 
-cimport stdio
-cimport python_exc
-cimport python_mem
-from python_ref cimport PyObject
-from python_version cimport PY_MAJOR_VERSION
-from python_unicode cimport Py_UNICODE, PyUnicode_AS_UNICODE, PyUnicode_GET_SIZE
+from libc cimport stdio
+cimport cpython.exc
+cimport cpython.mem
+from cpython.ref cimport PyObject
+from cpython.version cimport PY_MAJOR_VERSION
+from cpython.unicode cimport PyUnicode_AS_UNICODE, PyUnicode_GET_SIZE
 
 cdef extern from * nogil:
     ctypedef Py_ssize_t ssize_t
@@ -51,9 +51,9 @@ cdef _init_unicode_node(_AcoraUnicodeNodeStruct* c_node, state,
     mem_size = targets_mem_size = sizeof(_AcoraUnicodeNodeStruct**) * len(targets)
     if state.matches is not None and len(state.matches) > 0:
         mem_size += sizeof(PyObject*) * (len(state.matches) + 1) # NULL terminated
-    c_node.targets = <_AcoraUnicodeNodeStruct**> python_mem.PyMem_Malloc(mem_size)
+    c_node.targets = <_AcoraUnicodeNodeStruct**> cpython.mem.PyMem_Malloc(mem_size)
     if c_node.targets is NULL:
-        python_exc.PyErr_NoMemory()
+        cpython.exc.PyErr_NoMemory()
 
     for i, target in enumerate(targets):
         c_node.targets[i] = all_nodes + <size_t>node_offsets[target]
@@ -91,9 +91,9 @@ cdef _init_bytes_node(_AcoraBytesNodeStruct* c_node, state,
     mem_size = targets_mem_size = sizeof(_AcoraBytesNodeStruct**) * len(targets)
     if state.matches is not None and len(state.matches) > 0:
         mem_size += sizeof(PyObject*) * (len(state.matches) + 1) # NULL terminated
-    c_node.targets = <_AcoraBytesNodeStruct**> python_mem.PyMem_Malloc(mem_size)
+    c_node.targets = <_AcoraBytesNodeStruct**> cpython.mem.PyMem_Malloc(mem_size)
     if c_node.targets is NULL:
-        python_exc.PyErr_NoMemory()
+        cpython.exc.PyErr_NoMemory()
 
     for i, target in enumerate(targets):
         c_node.targets[i] = all_nodes + <size_t>node_offsets[target]
@@ -144,10 +144,10 @@ cdef class UnicodeAcora:
         cdef dict transitions_by_state = group_transitions_by_state(transitions)
 
         self.node_count = len(transitions_by_state)
-        c_nodes = self.start_node = <_AcoraUnicodeNodeStruct*> python_mem.PyMem_Malloc(
+        c_nodes = self.start_node = <_AcoraUnicodeNodeStruct*> cpython.mem.PyMem_Malloc(
             sizeof(_AcoraUnicodeNodeStruct) * self.node_count)
         if c_nodes is NULL:
-            python_exc.PyMem_NoMemory()
+            cpython.exc.PyMem_NoMemory()
 
         for i in range(self.node_count):
             # required by __dealloc__ in case of subsequent errors
@@ -166,8 +166,8 @@ cdef class UnicodeAcora:
         if self.start_node is not NULL:
             for i in range(self.node_count):
                 if self.start_node[i].targets is not NULL:
-                    python_mem.PyMem_Free(self.start_node[i].targets)
-            python_mem.PyMem_Free(self.start_node)
+                    cpython.mem.PyMem_Free(self.start_node[i].targets)
+            cpython.mem.PyMem_Free(self.start_node)
 
     cpdef finditer(self, unicode data):
         """Iterate over all occurrences of any keyword in the string.
@@ -263,10 +263,10 @@ cdef class BytesAcora:
         cdef dict transitions_by_state = group_transitions_by_state(transitions)
 
         self.node_count = len(transitions_by_state)
-        c_nodes = self.start_node = <_AcoraBytesNodeStruct*> python_mem.PyMem_Malloc(
+        c_nodes = self.start_node = <_AcoraBytesNodeStruct*> cpython.mem.PyMem_Malloc(
             sizeof(_AcoraBytesNodeStruct) * self.node_count)
         if c_nodes is NULL:
-            python_exc.PyMem_NoMemory()
+            cpython.exc.PyMem_NoMemory()
 
         for i in range(self.node_count):
             # required by __dealloc__ in case of subsequent errors
@@ -285,8 +285,8 @@ cdef class BytesAcora:
         if self.start_node is not NULL:
             for i in range(self.node_count):
                 if self.start_node[i].targets is not NULL:
-                    python_mem.PyMem_Free(self.start_node[i].targets)
-            python_mem.PyMem_Free(self.start_node)
+                    cpython.mem.PyMem_Free(self.start_node[i].targets)
+            cpython.mem.PyMem_Free(self.start_node)
 
     cpdef finditer(self, bytes data):
         return _BytesAcoraIter(self, data)
@@ -441,7 +441,7 @@ cdef class _FileAcoraIter:
                     &self.c_buffer_pos, &self.c_buffer_end,
                     &self.buffer_offset_count, &self.current_node, &error)
             if error:
-                python_exc.PyErr_SetFromErrno(IOError)
+                cpython.exc.PyErr_SetFromErrno(IOError)
         else:
             data_end = c_buffer + buffer_size
             while not found:
