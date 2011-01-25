@@ -39,6 +39,12 @@ class NfaState(dict):
         state.matches[:] = self.matches
         return state
 
+try:
+    from acora._acora import build_NfaState as NfaState
+except ImportError, e:
+    # no C implementation there
+    pass
+
 def insert_keyword(tree, keyword, state_id):
     if not keyword:
         raise ValueError("cannot search for the empty string")

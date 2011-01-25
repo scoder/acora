@@ -11,6 +11,7 @@ __all__ = ['BytesAcora', 'UnicodeAcora']
 from libc cimport stdio
 cimport cpython.exc
 cimport cpython.mem
+cimport cpython.object
 from cpython.ref cimport PyObject
 from cpython.version cimport PY_MAJOR_VERSION
 from cpython.unicode cimport PyUnicode_AS_UNICODE, PyUnicode_GET_SIZE
@@ -32,6 +33,59 @@ ctypedef struct _AcoraBytesNodeStruct:
     _AcoraBytesNodeStruct** targets
     PyObject** matches
     int char_count
+
+# state machine building support
+
+cdef class _NfaState(dict):
+    """NFA state for the untransformed automaton.
+    """
+    cdef public long long id
+    cdef public list matches
+
+    def __richcmp__(self, other, cmp_type):
+        try:
+            st_self = <_NfaState?>self
+            st_other = <_NfaState?>other
+        except TypeError:
+            return False
+        if cmp_type == cpython.object.Py_EQ:
+            return st_self.id == st_other.id
+        elif cmp_type == cpython.object.Py_LT:
+            return st_self.id < st_other.id
+        elif cmp_type == cpython.object.Py_NE:
+            return st_self.id != st_other.id
+        # that's all we need
+        return False
+
+    def __hash__(self):
+        return <long>self.id
+
+    def __str__(self):
+        return str(self.id)
+    __repr__ = __str__
+
+    def __copy__(self):
+        state = _NfaState(self)
+        state.id = self.id
+        state.matches = list(self.matches)
+        return state
+
+    def __deepcopy__(self, memo):
+        state = _NfaState(
+            [ (character, child.__deepcopy__(None))
+              for character, child in (<object>self).items() ])
+        state.id = self.id
+        state.matches = list(self.matches)
+        return state
+
+
+def build_NfaState(state_id, *args, **kwargs):
+    state = _NfaState(*args, **kwargs)
+    state.id = state_id
+    state.matches = []
+    return state
+
+# Unicode machine
 
 cdef _init_unicode_node(_AcoraUnicodeNodeStruct* c_node, state,
                         list state_transitions,
