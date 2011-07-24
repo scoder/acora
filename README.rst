@@ -21,6 +21,9 @@ module written in Cython. However, note that the current construction
 algorithm is not suitable for really large sets of keywords (i.e. more
 than a couple of thousand).
 
+You can find the `latest source code <https://github.com/scoder/acora>`_ on
+github.
+
 
 Features
 ---------
