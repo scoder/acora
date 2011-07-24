@@ -36,7 +36,7 @@ setup(
 
     description="Fast multi-keyword search engine for text strings",
 
-    long_description = open('README.txt').read(),
+    long_description = open('README.rst').read(),
 
     classifiers = [
     'Intended Audience :: Developers',
