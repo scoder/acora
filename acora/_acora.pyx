@@ -42,7 +42,7 @@ cdef class _NfaState(dict):
     cdef public long long id
     cdef public list matches
 
-    def __richcmp__(self, other, cmp_type):
+    def __richcmp__(self, other, int cmp_type):
         try:
             st_self = <_NfaState?>self
             st_other = <_NfaState?>other
