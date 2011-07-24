@@ -133,6 +133,10 @@ FAQs and recipes
 Changelog
 ----------
 
+* 1.6 [2011-07-24]
+
+  - substantially faster automaton building
+
 * 1.5 [2011-01-24]
 
   - Cython compiled NFA-2-DFA construction runs substantially faster
