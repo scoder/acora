@@ -3,4 +3,3 @@ include setup.py bench.py test.py
 include MANIFEST.in LICENSE.txt README.rst
 include testall.sh
 recursive-include acora *.py *.pyx *.c
-graft .hg
