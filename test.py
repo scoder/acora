@@ -289,7 +289,7 @@ def suite():
             unittest.makeSuite(BytesAcoraTest),
             unittest.makeSuite(PyAcoraTest),
             doctest.DocTestSuite(),
-            doctest.DocFileSuite('README.txt'),
+            doctest.DocFileSuite('README.rst'),
             ])
     return suite
 
