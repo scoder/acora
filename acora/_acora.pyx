@@ -67,7 +67,7 @@ cdef class _NfaState(dict):
     def __copy__(self):
         state = _NfaState(self)
         state.id = self.id
-        state.matches = list(self.matches)
+        state.matches = self.matches[:]
         return state
 
     def __deepcopy__(self, memo):
@@ -75,12 +75,12 @@ cdef class _NfaState(dict):
             [ (character, child.__deepcopy__(None))
               for character, child in (<object>self).items() ])
         state.id = self.id
-        state.matches = list(self.matches)
+        state.matches = self.matches[:]
         return state
 
 
 def build_NfaState(state_id, *args, **kwargs):
-    state = _NfaState(*args, **kwargs)
+    cdef _NfaState state = _NfaState(*args, **kwargs)
     state.id = state_id
     state.matches = []
     return state
