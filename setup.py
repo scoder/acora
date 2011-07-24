@@ -22,7 +22,7 @@ else:
     cmdclass = {}
     extensions = []
 
-version = "1.5"
+version = "1.6"
 
 setup(
     name = "acora",

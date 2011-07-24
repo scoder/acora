@@ -136,6 +136,8 @@ Changelog
 * 1.6 [2011-07-24]
 
   - substantially faster automaton building
+  - no longer includes .hg repo in source distribution
+  - built using Cython 0.15 (rc0)
 
 * 1.5 [2011-01-24]
 
