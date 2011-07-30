@@ -39,21 +39,18 @@ ctypedef struct _AcoraBytesNodeStruct:
 cdef class _NfaState(dict):
     """NFA state for the untransformed automaton.
     """
-    cdef public long long id
+    cdef public unsigned long id
     cdef public list matches
 
     def __richcmp__(self, other, int cmp_type):
-        try:
-            st_self = <_NfaState?>self
-            st_other = <_NfaState?>other
-        except TypeError:
-            return False
+        if type(self) is not _NfaState or type(other) is not _NfaState:
+            return cmp_type == cpython.object.Py_NE
         if cmp_type == cpython.object.Py_EQ:
-            return st_self.id == st_other.id
+            return (<_NfaState>self).id == (<_NfaState>other).id
         elif cmp_type == cpython.object.Py_LT:
-            return st_self.id < st_other.id
+            return (<_NfaState>self).id < (<_NfaState>other).id
         elif cmp_type == cpython.object.Py_NE:
-            return st_self.id != st_other.id
+            return (<_NfaState>self).id != (<_NfaState>other).id
         # that's all we need
         return False
 
@@ -62,21 +59,9 @@ cdef class _NfaState(dict):
 
     def __str__(self):
         return str(self.id)
-    __repr__ = __str__
 
-    def __copy__(self):
-        state = _NfaState(self)
-        state.id = self.id
-        state.matches = self.matches[:]
-        return state
-
-    def __deepcopy__(self, memo):
-        state = _NfaState(
-            [ (character, child.__deepcopy__(None))
-              for character, child in (<object>self).items() ])
-        state.id = self.id
-        state.matches = self.matches[:]
-        return state
+    def __repr__(self):
+        return str(self.id)
 
 
 def build_NfaState(state_id, *args, **kwargs):

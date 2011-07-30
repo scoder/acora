@@ -27,19 +27,6 @@ class NfaState(dict):
         return str(self.id)
     __repr__ = __str__
 
-    def __copy__(self):
-        state = NfaState(self.id, **self)
-        state.matches[:] = self.matches
-        return state
-
-    def __deepcopy__(self, memo):
-        state = NfaState(
-            self.id,
-            [ (char, state.__deepcopy__(None))
-              for char, state in self.items() ])
-        state.matches[:] = self.matches
-        return state
-
 try:
     from acora._acora import build_NfaState as NfaState
 except ImportError, e:
@@ -151,7 +138,7 @@ def nfa2dfa(tree, ignore_case):
     # rebuild transitions dict to point to exactly one state
     for key, state_set in transitions.items():
         assert len(state_set) == 1
-        transitions[key] = tuple(state_set)[0]
+        transitions[key] = state_set.pop()
 
     # duplicate the transitions for case insensitive parsing
     if ignore_case:
