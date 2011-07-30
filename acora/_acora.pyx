@@ -173,11 +173,12 @@ cdef inline _intern(dict d, obj):
 cdef dict group_transitions_by_state(dict transitions):
     # sort transitions by state ID (0 is start state) and transition character
     transitions_by_state = {}
-    for (state, character), target in transitions.items():
-        if state in transitions_by_state:
-            transitions_by_state[state].append((character, target))
-        else:
+    for (state, character), target in transitions.iteritems():
+        l = transitions_by_state.get(state)
+        if l is None:
             transitions_by_state[state] = [(character, target)]
+        else:
+            l.append((character, target))
     return transitions_by_state
 
 
