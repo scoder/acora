@@ -18,7 +18,6 @@ from cpython.version cimport PY_MAJOR_VERSION
 from cpython.unicode cimport PyUnicode_AS_UNICODE, PyUnicode_GET_SIZE
 
 cdef extern from * nogil:
-    ctypedef Py_ssize_t ssize_t
     ssize_t read(int fd, void *buf, size_t count)
 
 DEF FILE_BUFFER_SIZE = 32 * 1024
