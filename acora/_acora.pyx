@@ -276,7 +276,11 @@ cdef class _UnicodeAcoraIter:
                         or current_char > test_chars[current_node.char_count-1]:
                     current_node = start_node
                 else:
-                    for i in range(current_node.char_count):
+                    # walk through at most half the characters
+                    for i in range(0 if current_char < test_chars[current_node.char_count // 2]
+                                   else current_node.char_count // 2,
+                                   current_node.char_count if current_char >= test_chars[current_node.char_count // 2]
+                                   else current_node.char_count // 2):
                         if current_char <= test_chars[i]:
                             if current_char == test_chars[i]:
                                 current_node = current_node.targets[i]
@@ -420,7 +424,11 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
                 or current_char > test_chars[current_node.char_count-1]:
             current_node = start_node
         else:
-            for i in range(current_node.char_count):
+            # walk through at most half the characters
+            for i in range(0 if current_char < test_chars[current_node.char_count // 2]
+                           else current_node.char_count // 2,
+                           current_node.char_count if current_char >= test_chars[current_node.char_count // 2]
+                           else current_node.char_count // 2):
                 if current_char <= test_chars[i]:
                     if current_char == test_chars[i]:
                         current_node = current_node.targets[i]
