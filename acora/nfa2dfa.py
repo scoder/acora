@@ -1,3 +1,4 @@
+#cython: language_level=3
 
 # initial graph representation of the automaton
 
