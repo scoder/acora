@@ -62,16 +62,16 @@ def insert_keyword(tree, keyword, state_id):
 
 # NFA to DFA transformation
 
+def _visit_all(tree, visitor):
+    visitor(tree)
+    for node in tree.values():
+        _visit_all(node, visitor)
+
 def nfa2dfa(tree, ignore_case):
     """Transform a keyword tree into a DFA using powerset construction.
     """
-    def visit_all(tree, visitor):
-        visitor(tree)
-        for node in tree.values():
-            visit_all(node, visitor)
-
     states = []
-    visit_all(tree, states.append)
+    _visit_all(tree, states.append)
     next_state_id = len(states)
 
     # run through all states and collect all transitions, including
