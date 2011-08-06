@@ -118,9 +118,9 @@ def nfa2dfa(tree, ignore_case):
             # collect its transitions
             new_chars = chars_by_state[new_state] = set()
             for state in eq_states:
-                chars = chars_by_state[state]
-                new_chars.update(chars)
-                for char in chars:
+                transition_chars = chars_by_state[state]
+                new_chars.update(transition_chars)
+                for char in transition_chars:
                     # resolve original states from equivalence class states
                     targets = set()
                     for target in transitions[(state,char)]:
