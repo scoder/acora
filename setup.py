@@ -11,12 +11,12 @@ except ValueError:
         from Cython.Distutils import build_ext
         cmdclass = {'build_ext': build_ext}
         extensions = [Extension("acora._acora", ["acora/_acora.pyx"]),
-                      Extension("acora._nfa2dfa", ["acora/nfa2dfa.py"]),
+                      Extension("acora._nfa2dfa", ["acora/_nfa2dfa.py"]),
                       ]
     except ImportError:
         cmdclass = {}
         extensions = [Extension("acora._acora", ["acora/_acora.c"]),
-                      Extension("acora._nfa2dfa", ["acora/nfa2dfa.c"]),
+                      Extension("acora._nfa2dfa", ["acora/_nfa2dfa.c"]),
                       ]
 else:
     cmdclass = {}
