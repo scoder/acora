@@ -100,6 +100,7 @@ def nfa2dfa(tree, ignore_case):
     # create new states for newly found equivalence classes
     existing_eq_classes = {}
     eq_classes_by_state = {}
+    targets = set() # created here to reduce overhead in innermost loop
     while new_eq_classes:
         eq_classes = new_eq_classes
         new_eq_classes = set()
@@ -115,12 +116,6 @@ def nfa2dfa(tree, ignore_case):
             # create a new joined state
             new_state = NfaState(next_state_id)
 
-            matches = []
-            for s in eq_states:
-                matches.extend(s.matches)
-            matches.sort(key=len, reverse=True)
-            new_state.matches = matches
-
             eq_classes_by_state[new_state] = eq_states
             existing_eq_classes[eq_key] = new_state
             next_state_id += 1
@@ -128,14 +123,15 @@ def nfa2dfa(tree, ignore_case):
             # redirect the original transition to the new node
             transitions[key] = set([new_state])
 
-            # collect its transitions
+            # collect its transitions and matches
+            matches = []
             new_chars = chars_by_state[new_state] = set()
             for state in eq_states:
+                matches.extend(state.matches)
                 transition_chars = chars_by_state[state]
                 new_chars.update(transition_chars)
                 for char in transition_chars:
                     # resolve original states from equivalence class states
-                    targets = set()
                     for target in transitions[(state,char)]:
                         if target in eq_classes_by_state:
                             targets.update(eq_classes_by_state[target])
@@ -144,9 +140,14 @@ def nfa2dfa(tree, ignore_case):
                     new_key = (new_state,char)
                     if new_key in transitions:
                         transitions[new_key].update(targets)
+                        targets.clear()
                     else:
-                        transitions[new_key] = set(targets)
+                        transitions[new_key] = targets
+                        targets = set()
                     new_eq_classes.add(new_key)
+            # sort longest match first to assure left-to-right match order
+            matches.sort(key=len, reverse=True)
+            new_state.matches = matches
 
     # rebuild transitions dict to point to exactly one state
     for key, state_set in transitions.items():

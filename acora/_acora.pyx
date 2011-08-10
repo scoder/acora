@@ -39,9 +39,6 @@ ctypedef struct _AcoraBytesNodeStruct:
 cdef class _NfaState(dict):
     """NFA state for the untransformed automaton.
     """
-    cdef public unsigned long id
-    cdef public list matches
-
     def __richcmp__(self, other, int cmp_type):
         if type(self) is not _NfaState or type(other) is not _NfaState:
             return cmp_type == cpython.object.Py_NE
