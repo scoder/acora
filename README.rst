@@ -142,6 +142,7 @@ Changelog
 * 1.7 [2011-08-24]
 
   - searching binary strings for byte values > 127 was broken
+  - built using Cython 0.15+
 
 * 1.6 [2011-07-24]
 
