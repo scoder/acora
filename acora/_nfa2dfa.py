@@ -42,7 +42,7 @@ class NfaState(dict):
 
 try:
     from acora._acora import build_NfaState as NfaState
-except ImportError, e:
+except ImportError:
     # no C implementation there
     pass
 
