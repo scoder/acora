@@ -228,7 +228,7 @@ class BytesAcoraTest(unittest.TestCase, AcoraTest):
 
     def _swrap(self, s):
         if isinstance(s, unicode):
-            s = s.encode('utf-8')
+            s = s.encode('ISO-8859-1')
         return s
 
     def _search_in_file(self, ac, data):
@@ -270,6 +270,27 @@ class BytesAcoraTest(unittest.TestCase, AcoraTest):
         ac = self._build(*self.simple_kwds)
         result = self._search_in_file(ac, self.simple_data)
         self.assertEquals(result, self.expected_result)
+
+    def test_binary_data_search(self):
+        pattern = self._swrap('\xa5\x66\x80')
+        ac = self._build(pattern)
+        mainString = self._swrap(10 * '\xf0') + pattern + self._swrap(10 * '\xf0')
+        result = ac.findall(mainString)
+        self.assertEquals(result, [(pattern, 10)])
+
+    def test_binary_data_search_start(self):
+        pattern = self._swrap('\xa5\x66\x80')
+        ac = self._build(pattern)
+        mainString = pattern + self._swrap(10 * '\xf0')
+        result = ac.findall(mainString)
+        self.assertEquals(result, [(pattern, 0)])
+
+    def test_binary_data_search_end(self):
+        pattern = self._swrap('\xa5\x66\x80')
+        ac = self._build(pattern)
+        mainString = self._swrap(10 * '\xf0') + pattern
+        result = ac.findall(mainString)
+        self.assertEquals(result, [(pattern, 10)])
 
 
 class PyAcoraTest(UnicodeAcoraTest, BytesAcoraTest):

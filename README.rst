@@ -139,6 +139,10 @@ FAQs and recipes
 Changelog
 ----------
 
+* 1.7 [2011-08-24]
+
+  - searching binary strings for byte values > 127 was broken
+
 * 1.6 [2011-07-24]
 
   - substantially faster automaton building

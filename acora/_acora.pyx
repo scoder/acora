@@ -29,7 +29,7 @@ ctypedef struct _AcoraUnicodeNodeStruct:
     int char_count
 
 ctypedef struct _AcoraBytesNodeStruct:
-    char* characters
+    unsigned char* characters
     _AcoraBytesNodeStruct** targets
     PyObject** matches
     int char_count
@@ -364,9 +364,9 @@ cdef class _BytesAcoraIter:
     cdef Py_ssize_t match_index
     cdef bytes data
     cdef BytesAcora acora
-    cdef char* data_char
-    cdef char* data_end
-    cdef char* data_start
+    cdef unsigned char* data_char
+    cdef unsigned char* data_end
+    cdef unsigned char* data_start
 
     def __cinit__(self, BytesAcora acora, bytes data):
         assert acora.start_node is not NULL and acora.start_node.matches is NULL
@@ -380,10 +380,10 @@ cdef class _BytesAcoraIter:
         return self
 
     def __next__(self):
-        cdef char* data_char = self.data_char
-        cdef char* data_end = self.data_end
-        cdef char* test_chars
-        cdef char current_char
+        cdef unsigned char* data_char = self.data_char
+        cdef unsigned char* data_end = self.data_end
+        cdef unsigned char* test_chars
+        cdef unsigned char current_char
         cdef int i, found = 0
         if self.current_node.matches is not NULL:
             if self.current_node.matches[self.match_index] is not NULL:
@@ -402,13 +402,13 @@ cdef class _BytesAcoraIter:
         return (match, <Py_ssize_t>(self.data_char - self.data_start) - len(match))
 
 cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
-                          char* data_end,
-                          char** _data_char,
+                          unsigned char* data_end,
+                          unsigned char** _data_char,
                           _AcoraBytesNodeStruct** _current_node) nogil:
-    cdef char* data_char = _data_char[0]
+    cdef unsigned char* data_char = _data_char[0]
     cdef _AcoraBytesNodeStruct* current_node = _current_node[0]
-    cdef char* test_chars
-    cdef char current_char
+    cdef unsigned char* test_chars
+    cdef unsigned char current_char
     cdef int i, found = 0
 
     while data_char < data_end:
@@ -446,8 +446,8 @@ cdef class _FileAcoraIter:
     cdef _AcoraBytesNodeStruct* start_node
     cdef Py_ssize_t match_index, read_size, buffer_offset_count
     cdef bytes buffer
-    cdef char* c_buffer_pos
-    cdef char* c_buffer_end
+    cdef unsigned char* c_buffer_pos
+    cdef unsigned char* c_buffer_end
     cdef object f
     cdef bint close_file
     cdef int c_file
@@ -472,15 +472,15 @@ cdef class _FileAcoraIter:
         else:
             # use a statically allocated, fixed-size C buffer
             self.buffer = b'\0' * buffer_size
-        self.c_buffer_pos = self.c_buffer_end = <char*> self.buffer
+        self.c_buffer_pos = self.c_buffer_end = <unsigned char*> self.buffer
 
     def __iter__(self):
         return self
 
     def __next__(self):
         cdef bytes buffer
-        cdef char* c_buffer
-        cdef char* data_end
+        cdef unsigned char* c_buffer
+        cdef unsigned char* data_end
         cdef int error = 0, found = 0
         cdef Py_ssize_t buffer_size, bytes_read = 0
         if self.c_buffer_pos is NULL:
@@ -491,7 +491,7 @@ cdef class _FileAcoraIter:
             self.match_index = 0
 
         buffer_size = len(self.buffer)
-        c_buffer = <char*> self.buffer
+        c_buffer = <unsigned char*> self.buffer
         if self.c_file != -1:
             with nogil:
                 found = _find_next_match_in_cfile(
@@ -510,7 +510,7 @@ cdef class _FileAcoraIter:
                     if buffer_size == 0:
                         self.c_buffer_pos = NULL
                         break
-                    c_buffer = self.c_buffer_pos = <char*> self.buffer
+                    c_buffer = self.c_buffer_pos = <unsigned char*> self.buffer
                     data_end = c_buffer + buffer_size
                 with nogil:
                     found = _search_in_bytes(
@@ -527,18 +527,18 @@ cdef class _FileAcoraIter:
         match = <bytes> self.current_node.matches[self.match_index]
         self.match_index += 1
         return (match, self.buffer_offset_count + (
-                self.c_buffer_pos - (<char*> self.buffer)) - len(match))
+                self.c_buffer_pos - (<unsigned char*> self.buffer)) - len(match))
 
 
-cdef int _find_next_match_in_cfile(int c_file, char* c_buffer, size_t buffer_size,
+cdef int _find_next_match_in_cfile(int c_file, unsigned char* c_buffer, size_t buffer_size,
                                    _AcoraBytesNodeStruct* start_node,
-                                   char** _buffer_pos, char** _buffer_end,
+                                   unsigned char** _buffer_pos, unsigned char** _buffer_end,
                                    Py_ssize_t* _buffer_offset_count,
                                    _AcoraBytesNodeStruct** _current_node,
                                    int* error) nogil:
-    cdef char* buffer_pos = _buffer_pos[0]
-    cdef char* buffer_end = _buffer_end[0]
-    cdef char* data_end = c_buffer + buffer_size
+    cdef unsigned char* buffer_pos = _buffer_pos[0]
+    cdef unsigned char* buffer_end = _buffer_end[0]
+    cdef unsigned char* data_end = c_buffer + buffer_size
     cdef Py_ssize_t buffer_offset_count = _buffer_offset_count[0]
     cdef _AcoraBytesNodeStruct* current_node = _current_node[0]
     cdef int found = 0
