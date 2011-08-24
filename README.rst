@@ -22,6 +22,12 @@ than a couple of thousand).
 You can find the `latest source code <https://github.com/scoder/acora>`_ on
 github.
 
+To report a bug or request new features, use the `github bug tracker
+<https://github.com/scoder/acora/issues>`_.  Please try to provide a
+short test case that reproduces the problem without requiring too much
+experimentation or large amounts of data.  The easier it is to
+reproduce the problem, the easier it is to solve it.
+
 
 Features
 ---------
