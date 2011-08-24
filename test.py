@@ -297,6 +297,10 @@ class PyAcoraTest(UnicodeAcoraTest, BytesAcoraTest):
     # both types of tests work here
     from acora import PyAcora as acora
 
+    test_binary_data_search = None
+    test_binary_data_search_start = None
+    test_binary_data_search_end = None
+
     def _swrap(self, s):
         if isinstance(s, unicode):
             s = unescape_unicode(s)
