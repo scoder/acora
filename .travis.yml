@@ -1,0 +1,13 @@
+language: python
+
+python:
+  - 2.6
+  - 2.7
+  - 3.2
+
+install:
+  - pip install --use-mirrors cython
+  - python setup.py build_ext --inplace
+
+script:
+  - python test.py
