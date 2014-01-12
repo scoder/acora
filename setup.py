@@ -4,25 +4,45 @@ from distutils.extension import Extension
 import sys
 import os.path
 
+SOURCES = ["acora/_acora", "acora/_nfa2dfa"]
+BASEDIR = os.path.dirname(__file__)
+
+extensions = [
+    Extension("acora._acora", ["acora/_acora.pyx"]),
+    Extension("acora._nfa2dfa", ["acora/_nfa2dfa.py"]),
+]
+
+try:
+    sys.argv.remove('--with-cython')
+except ValueError:
+    USE_CYTHON = False
+else:
+    USE_CYTHON = True
+
 try:
     sys.argv.remove('--no-compile')
 except ValueError:
-    try:
-        from Cython.Distutils import build_ext
-        cmdclass = {'build_ext': build_ext}
-        extensions = [Extension("acora._acora", ["acora/_acora.pyx"]),
-                      Extension("acora._nfa2dfa", ["acora/_nfa2dfa.py"]),
-                      ]
-    except ImportError:
-        cmdclass = {}
-        extensions = [Extension("acora._acora", ["acora/_acora.c"]),
-                      Extension("acora._nfa2dfa", ["acora/_nfa2dfa.c"]),
-                      ]
+    if not all(os.path.exists(os.path.join(BASEDIR, sfile+'.c'))
+               for sfile in SOURCES):
+        print("WARNING: Generated .c files are missing,"
+              " enabling Cython compilation")
+        USE_CYTHON = True
+
+    if USE_CYTHON:
+        from Cython.Build import cythonize
+        extensions = cythonize(extensions)
+    else:
+        def use_c_files(extension):
+            extension.sources = [
+                os.path.splitext(sfile)[0] + '.c'
+                for sfile in extension.sources]
+            return extension
+        extensions = [use_c_files(ext) for ext in extensions]
 else:
-    cmdclass = {}
     extensions = []
 
-version = "1.7"
+
+version = "1.8pre"
 
 setup(
     name = "acora",
@@ -57,7 +77,6 @@ setup(
 
     # extension setup
 
-    cmdclass = cmdclass,
     ext_modules = extensions,
     packages = ['acora'],
 )
