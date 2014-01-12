@@ -1,4 +1,5 @@
 
+cimport cython
 from _acora cimport _NfaState
 
 cdef _visit_all(_NfaState tree, visitor)
