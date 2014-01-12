@@ -139,6 +139,11 @@ FAQs and recipes
 Changelog
 ----------
 
+* 1.8pre
+
+  - no longer recompiles sources when Cython is installed, unless
+    ``--with-cython`` option is passed to setup.py
+
 * 1.7 [2011-08-24]
 
   - searching binary strings for byte values > 127 was broken
