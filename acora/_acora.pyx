@@ -255,7 +255,7 @@ cdef class _UnicodeAcoraIter:
         cdef Py_UNICODE* data_end = self.data_end
         cdef Py_UNICODE* test_chars
         cdef Py_UNICODE current_char
-        cdef int i, found = 0, start, end
+        cdef int i, found = 0, start, mid, end
         cdef _AcoraUnicodeNodeStruct* start_node = self.start_node
         cdef _AcoraUnicodeNodeStruct* current_node = self.current_node
         if current_node.matches is not NULL:
@@ -272,14 +272,13 @@ cdef class _UnicodeAcoraIter:
                     current_node = start_node
                 else:
                     # walk through at most half the characters
-                    if current_char < test_chars[current_node.char_count // 2]:
+                    mid = current_node.char_count // 2
+                    if current_char < test_chars[mid]:
                         start = 0
+                        end = mid
                     else:
-                        start = current_node.char_count // 2
-                    if current_char >= test_chars[current_node.char_count // 2]:
+                        start = mid
                         end = current_node.char_count
-                    else:
-                        end = current_node.char_count // 2
 
                     for i in range(start, end):
                         if current_char <= test_chars[i]:
@@ -415,7 +414,7 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
     cdef _AcoraBytesNodeStruct* current_node = _current_node[0]
     cdef unsigned char* test_chars
     cdef unsigned char current_char
-    cdef int i, found = 0, start, end
+    cdef int i, found = 0, start, mid, end
 
     while data_char < data_end:
         current_char = data_char[0]
@@ -426,14 +425,13 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
             current_node = start_node
         else:
             # walk through at most half the characters
-            if current_char < test_chars[current_node.char_count // 2]:
+            mid = current_node.char_count // 2
+            if current_char < test_chars[mid]:
                 start = 0
+                end = mid
             else:
-                start = current_node.char_count // 2
-            if current_char >= test_chars[current_node.char_count // 2]:
+                start = mid
                 end = current_node.char_count
-            else:
-                end = current_node.char_count // 2
 
             for i in range(start, end):
                 if current_char <= test_chars[i]:
