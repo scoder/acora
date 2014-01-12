@@ -267,7 +267,9 @@ cdef class _UnicodeAcoraIter:
                 current_char = data_char[0]
                 data_char += 1
                 test_chars = current_node.characters
-                if current_char < test_chars[0] \
+                if current_char == test_chars[0]:
+                    current_node = current_node.targets[0]
+                elif current_char < test_chars[0] \
                         or current_char > test_chars[current_node.char_count-1]:
                     current_node = start_node
                 else:
@@ -289,9 +291,9 @@ cdef class _UnicodeAcoraIter:
                             break
                     else:
                         current_node = start_node
-                    if current_node.matches is not NULL:
-                        found = 1
-                        break
+                if current_node.matches is not NULL:
+                    found = 1
+                    break
         self.data_char = data_char
         self.current_node = current_node
         if found:
@@ -420,7 +422,9 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
         current_char = data_char[0]
         data_char += 1
         test_chars = current_node.characters
-        if current_char < test_chars[0] \
+        if current_char == test_chars[0]:
+            current_node = current_node.targets[0]
+        elif current_char < test_chars[0] \
                 or current_char > test_chars[current_node.char_count-1]:
             current_node = start_node
         else:
@@ -442,9 +446,9 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
                     break
             else:
                 current_node = start_node
-            if current_node.matches is not NULL:
-                found = 1
-                break
+        if current_node.matches is not NULL:
+            found = 1
+            break
     _data_char[0] = data_char
     _current_node[0] = current_node
     return found
