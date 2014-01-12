@@ -30,14 +30,18 @@ except ValueError:
 
     if USE_CYTHON:
         from Cython.Build import cythonize
-        extensions = cythonize(extensions)
     else:
-        def use_c_files(extension):
-            extension.sources = [
-                os.path.splitext(sfile)[0] + '.c'
-                for sfile in extension.sources]
-            return extension
-        extensions = [use_c_files(ext) for ext in extensions]
+        def cythonize(extensions):
+            for extension in extensions:
+                sources = []
+                for sfile in extension.sources:
+                    path, ext = os.path.splitext(sfile)
+                    if ext in ('.pyx', '.py'):
+                        sfile = path + '.c'
+                    sources.append(sfile)
+                extension.sources[:] = sources
+            return extensions
+    extensions = cythonize(extensions)
 else:
     extensions = []
 
