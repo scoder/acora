@@ -255,7 +255,7 @@ cdef class _UnicodeAcoraIter:
         cdef Py_UNICODE* data_end = self.data_end
         cdef Py_UNICODE* test_chars
         cdef Py_UNICODE current_char
-        cdef int i, found = 0
+        cdef int i, found = 0, start, end
         cdef _AcoraUnicodeNodeStruct* start_node = self.start_node
         cdef _AcoraUnicodeNodeStruct* current_node = self.current_node
         if current_node.matches is not NULL:
@@ -272,10 +272,16 @@ cdef class _UnicodeAcoraIter:
                     current_node = start_node
                 else:
                     # walk through at most half the characters
-                    for i in range(0 if current_char < test_chars[current_node.char_count // 2]
-                                   else current_node.char_count // 2,
-                                   current_node.char_count if current_char >= test_chars[current_node.char_count // 2]
-                                   else current_node.char_count // 2):
+                    if current_char < test_chars[current_node.char_count // 2]:
+                        start = 0
+                    else:
+                        start = current_node.char_count // 2
+                    if current_char >= test_chars[current_node.char_count // 2]:
+                        end = current_node.char_count
+                    else:
+                        end = current_node.char_count // 2
+
+                    for i in range(start, end):
                         if current_char <= test_chars[i]:
                             if current_char == test_chars[i]:
                                 current_node = current_node.targets[i]
@@ -409,7 +415,7 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
     cdef _AcoraBytesNodeStruct* current_node = _current_node[0]
     cdef unsigned char* test_chars
     cdef unsigned char current_char
-    cdef int i, found = 0
+    cdef int i, found = 0, start, end
 
     while data_char < data_end:
         current_char = data_char[0]
@@ -420,10 +426,16 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
             current_node = start_node
         else:
             # walk through at most half the characters
-            for i in range(0 if current_char < test_chars[current_node.char_count // 2]
-                           else current_node.char_count // 2,
-                           current_node.char_count if current_char >= test_chars[current_node.char_count // 2]
-                           else current_node.char_count // 2):
+            if current_char < test_chars[current_node.char_count // 2]:
+                start = 0
+            else:
+                start = current_node.char_count // 2
+            if current_char >= test_chars[current_node.char_count // 2]:
+                end = current_node.char_count
+            else:
+                end = current_node.char_count // 2
+
+            for i in range(start, end):
                 if current_char <= test_chars[i]:
                     if current_char == test_chars[i]:
                         current_node = current_node.targets[i]
