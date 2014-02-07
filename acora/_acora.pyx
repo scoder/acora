@@ -20,6 +20,16 @@ from cpython.unicode cimport PyUnicode_AS_UNICODE, PyUnicode_GET_SIZE
 cdef extern from * nogil:
     ssize_t read(int fd, void *buf, size_t count)
 
+cdef extern from "acora_defs.h":
+    # PEP 393
+    cdef bint PyUnicode_IS_READY(object u)
+    cdef Py_ssize_t PyUnicode_GET_LENGTH(object u)
+    cdef int PyUnicode_KIND(object u)
+    cdef void* PyUnicode_DATA(object u)
+    cdef int PyUnicode_WCHAR_KIND
+    cdef Py_UCS4 PyUnicode_READ(int kind, void* data, Py_ssize_t index) nogil
+
+
 DEF FILE_BUFFER_SIZE = 32 * 1024
 
 ctypedef struct _AcoraUnicodeNodeStruct:
@@ -93,6 +103,7 @@ cdef _init_unicode_node(_AcoraUnicodeNodeStruct* c_node, state,
     cdef Py_ssize_t i
     cdef tuple matches
     cdef unicode characters
+    cdef Py_UCS4 ch
 
     state_transitions.sort() # sort by characters
     chars, targets = list(zip(*state_transitions))
@@ -125,7 +136,7 @@ cdef _init_unicode_node(_AcoraUnicodeNodeStruct* c_node, state,
         c_characters = <Py_UCS4*> (c_node.matches + i + 1)
 
     for i, ch in enumerate(characters):
-        c_characters[i] = ord(ch)
+        c_characters[i] = ch
     c_node.characters = c_characters
     c_node.char_count = len(characters)
 
@@ -199,7 +210,7 @@ cdef class UnicodeAcora:
     cdef Py_ssize_t node_count
     cdef tuple _pyrefs
 
-    def __cinit__(self, start_state, dict transitions):
+    def __cinit__(self, start_state, dict transitions not None):
         cdef _AcoraUnicodeNodeStruct* c_nodes
         cdef Py_ssize_t i
         self.start_node = NULL
@@ -245,40 +256,52 @@ cdef class UnicodeAcora:
 cdef class _UnicodeAcoraIter:
     cdef _AcoraUnicodeNodeStruct* current_node
     cdef _AcoraUnicodeNodeStruct* start_node
-    cdef Py_ssize_t match_index
+    cdef Py_ssize_t data_pos, data_len, match_index
     cdef unicode data
     cdef UnicodeAcora acora
-    cdef Py_UNICODE* data_char
-    cdef Py_UNICODE* data_end
+    cdef void* data_start
+    cdef int unicode_kind
 
-    def __cinit__(self, UnicodeAcora acora, unicode data):
+    def __cinit__(self, UnicodeAcora acora not None, unicode data not None):
         assert acora.start_node is not NULL and acora.start_node.matches is NULL
         self.acora = acora
         self.start_node = self.current_node = acora.start_node
         self.match_index = 0
         self.data = data
-        self.data_char = PyUnicode_AS_UNICODE(data)
-        self.data_end = self.data_char + PyUnicode_GET_SIZE(data)
+        self.data_pos = 0
+        if PyUnicode_IS_READY(data):
+            # PEP393 Unicode string
+            self.data_start = PyUnicode_DATA(data)
+            self.data_len = PyUnicode_GET_LENGTH(data)
+            self.unicode_kind = PyUnicode_KIND(data)
+        else:
+            # pre-/non-PEP393 Unicode string
+            self.data_start = PyUnicode_AS_UNICODE(data)
+            self.data_len = PyUnicode_GET_SIZE(data)
+            self.unicode_kind = PyUnicode_WCHAR_KIND
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        cdef Py_UNICODE* data_char = self.data_char
-        cdef Py_UNICODE* data_end = self.data_end
+        cdef void* data_start = self.data_start
         cdef Py_UCS4* test_chars
         cdef Py_UCS4 current_char
         cdef int i, found = 0, start, mid, end
+        cdef Py_ssize_t data_len = self.data_len, data_pos = self.data_pos
         cdef _AcoraUnicodeNodeStruct* start_node = self.start_node
         cdef _AcoraUnicodeNodeStruct* current_node = self.current_node
+
         if current_node.matches is not NULL:
             if current_node.matches[self.match_index] is not NULL:
                 return self._build_next_match()
             self.match_index = 0
+
+        kind = self.unicode_kind
         with nogil:
-            while data_char < data_end:
-                current_char = data_char[0]
-                data_char += 1
+            while data_pos < data_len:
+                current_char = PyUnicode_READ(kind, data_start, data_pos)
+                data_pos += 1
                 test_chars = current_node.characters
                 if current_char == test_chars[0]:
                     current_node = current_node.targets[0]
@@ -307,7 +330,7 @@ cdef class _UnicodeAcoraIter:
                 if current_node.matches is not NULL:
                     found = 1
                     break
-        self.data_char = data_char
+        self.data_pos = data_pos
         self.current_node = current_node
         if found:
             return self._build_next_match()
@@ -316,9 +339,7 @@ cdef class _UnicodeAcoraIter:
     cdef _build_next_match(self):
         match = <unicode> self.current_node.matches[self.match_index]
         self.match_index += 1
-        return (match,
-                <Py_ssize_t>(self.data_char - PyUnicode_AS_UNICODE(self.data)
-                             ) - PyUnicode_GET_SIZE(match))
+        return match, self.data_pos - len(match)
 
 
 # bytes data handling
@@ -330,7 +351,7 @@ cdef class BytesAcora:
     cdef Py_ssize_t node_count
     cdef tuple _pyrefs
 
-    def __cinit__(self, start_state, dict transitions):
+    def __cinit__(self, start_state, dict transitions not None):
         cdef _AcoraBytesNodeStruct* c_nodes
         cdef Py_ssize_t i
         self.start_node = NULL

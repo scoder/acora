@@ -7,7 +7,6 @@ import acora
 if acora.BytesAcora is acora.PyAcora or acora.UnicodeAcora is acora.PyAcora:
     print("WARNING: '_acora' C extension not imported, only testing Python implementation")
 
-import re
 import sys
 import unittest
 import codecs
@@ -159,8 +158,8 @@ class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
     from acora import UnicodeAcora as acora
 
     def _swrap(self, s):
-        if not isinstance(s, unicode):
-            s = s.decode('utf-8')
+        if isinstance(s, unicode):
+            s = s.encode('ascii')
         return unescape_unicode(s)
 
     def test_finditer_line_endings(self):
@@ -192,10 +191,17 @@ class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
 
     def test_finditer_single_keyword_unicode(self):
         s = self._swrap
-        finditer = self._build(unicode("\\uF8D2")).finditer
+        finditer = self._build("\\uF8D2").finditer
         self.assertEquals(
-            list(finditer(s(unicode("\\uF8D1\\uF8D2\\uF8D3")))),
-            self._result([(unicode("\\uF8D2"), 1)]))
+            list(finditer(s("\\uF8D1\\uF8D2\\uF8D3"))),
+            self._result([("\\uF8D2", 1)]))
+
+    def test_finditer_single_keyword_non_bmp(self):
+        s = self._swrap
+        finditer = self._build("\\U0001F8D2").finditer
+        self.assertEquals(
+            list(finditer(s("\\U0001F8D1\\U0001F8D2\\uF8D3"))),
+            self._result([("\\U0001F8D2", 1)]))
 
     def test_finditer_ignore_case(self):
         s = self._swrap
@@ -293,33 +299,28 @@ class BytesAcoraTest(unittest.TestCase, AcoraTest):
         self.assertEquals(result, [(pattern, 10)])
 
 
-class PyAcoraTest(UnicodeAcoraTest, BytesAcoraTest):
-    # both types of tests work here
+class PyUnicodeAcoraTest(UnicodeAcoraTest):
     from acora import PyAcora as acora
 
-    def test_binary_data_search(self): pass
-    def test_binary_data_search_start(self): pass
-    def test_binary_data_search_end(self): pass
 
-    def _swrap(self, s):
-        if isinstance(s, unicode):
-            s = unescape_unicode(s)
-        return s
+class PyBytesAcoraTest(BytesAcoraTest):
+    from acora import PyAcora as acora
 
 
 def suite():
     import doctest
-    suite = unittest.TestSuite([
-            unittest.makeSuite(UnicodeAcoraTest),
-            unittest.makeSuite(BytesAcoraTest),
-            unittest.makeSuite(PyAcoraTest),
-            doctest.DocTestSuite(),
-            doctest.DocFileSuite('README.rst'),
-            ])
-    return suite
+    tests = unittest.TestSuite([
+        unittest.makeSuite(UnicodeAcoraTest),
+        unittest.makeSuite(PyUnicodeAcoraTest),
+        unittest.makeSuite(BytesAcoraTest),
+        unittest.makeSuite(PyBytesAcoraTest),
+        doctest.DocTestSuite(),
+        doctest.DocFileSuite('README.rst'),
+    ])
+    return tests
+
 
 if __name__ == "__main__":
-    import sys
     args = sys.argv[1:]
     verbosity = min(2, args.count('-v') + args.count('-vv')*2)
     unittest.TextTestRunner(verbosity=verbosity).run(suite())
