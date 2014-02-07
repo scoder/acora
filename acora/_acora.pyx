@@ -1,5 +1,6 @@
 #cython: embedsignature=True
 #cython: language_level=3
+#cython: binding=True
 
 """A fast C implementation of the Acora search engine.
 
