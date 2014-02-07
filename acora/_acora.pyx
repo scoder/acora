@@ -537,7 +537,7 @@ cdef class _FileAcoraIter:
         self.f = f
         self.close_file = close
         try:
-            self.c_file = f.fileno()
+            self.c_file = f.fileno() if f.tell() == 0 else -1
         except:
             # maybe not a C file?
             self.c_file = -1
