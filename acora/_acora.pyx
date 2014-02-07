@@ -434,7 +434,7 @@ cdef class _BytesAcoraIter:
     cdef unsigned char* data_end
     cdef unsigned char* data_start
 
-    def __cinit__(self, BytesAcora acora, bytes data):
+    def __cinit__(self, BytesAcora acora not None, bytes data):
         assert acora.start_node is not NULL and acora.start_node.matches is NULL
         self.acora = acora
         self.start_node = self.current_node = acora.start_node
@@ -528,7 +528,7 @@ cdef class _FileAcoraIter:
     cdef int c_file
     cdef BytesAcora acora
 
-    def __cinit__(self, BytesAcora acora, f, bint close=False, Py_ssize_t buffer_size=FILE_BUFFER_SIZE):
+    def __cinit__(self, BytesAcora acora not None, f, bint close=False, Py_ssize_t buffer_size=FILE_BUFFER_SIZE):
         assert acora.start_node is not NULL and acora.start_node.matches is NULL
         self.acora = acora
         self.start_node = self.current_node = acora.start_node
