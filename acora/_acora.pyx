@@ -244,11 +244,15 @@ cdef class UnicodeAcora:
 
     cpdef finditer(self, unicode data):
         """Iterate over all occurrences of any keyword in the string.
+
+        Returns (keyword, offset) pairs.
         """
         return _UnicodeAcoraIter(self, data)
 
     def findall(self, unicode data):
-        """Build a list of all occurrences of any keyword in the string.
+        """Find all occurrences of any keyword in the string.
+
+        Returns a list of (keyword, offset) pairs.
         """
         return list(self.finditer(data))
 
@@ -384,12 +388,27 @@ cdef class BytesAcora:
             cpython.mem.PyMem_Free(self.start_node)
 
     cpdef finditer(self, bytes data):
+        """Iterate over all occurrences of any keyword in the string.
+
+        Returns (keyword, offset) pairs.
+        """
         return _BytesAcoraIter(self, data)
 
     def findall(self, bytes data):
+        """Find all occurrences of any keyword in the string.
+
+        Returns a list of (keyword, offset) pairs.
+        """
         return list(self.finditer(data))
 
     def filefind(self, f):
+        """Iterate over all occurrences of any keyword in a file.
+
+        The file must be either a file path, a file opened in binary mode
+        or a file-like object returning bytes objects on .read().
+
+        Returns (keyword, offset) pairs.
+        """
         close_file = False
         if not hasattr(f, 'read'):
             f = open(f, 'rb')
@@ -397,6 +416,10 @@ cdef class BytesAcora:
         return _FileAcoraIter(self, f, close_file)
 
     def filefindall(self, f):
+        """Find all occurrences of any keyword in a file.
+
+        Returns a list of (keyword, offset) pairs.
+        """
         return list(self.filefind(f))
 
 
