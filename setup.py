@@ -60,7 +60,7 @@ if 'setuptools' in sys.modules:
 
 
 def read_readme():
-    f = open('README.rst')
+    f = open(os.path.join(os.path.dirname(__file__), 'README.rst'))
     try:
         return f.read()
     finally:
