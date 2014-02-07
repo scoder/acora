@@ -60,12 +60,14 @@ def insert_keyword(tree, keyword, state_id):
     tree.matches = [keyword]
     return state_id
 
+
 # NFA to DFA transformation
 
 def _visit_all(tree, visitor):
     visitor(tree)
     for node in tree.values():
         _visit_all(node, visitor)
+
 
 def nfa2dfa(tree, ignore_case):
     """Transform a keyword tree into a DFA using powerset construction.
@@ -79,6 +81,7 @@ def nfa2dfa(tree, ignore_case):
     transitions = {}
     chars_by_state = {}
     new_eq_classes = set()
+    start_state_transitions = list(tree.items())
     for state in states:
         chars = chars_by_state[state] = set()
         for char, target in state.items():
@@ -86,21 +89,23 @@ def nfa2dfa(tree, ignore_case):
                 char = char.lower()
             transitions[(state,char)] = set([target])
             chars.add(char)
-        for char, target in tree.items():
+        for char, target in start_state_transitions:
             if ignore_case:
                 char = char.lower()
             chars.add(char)
             key = (state,char)
-            if key in transitions:
-                transitions[key].add(target)
+            t = transitions.get(key)
+            if t is None:
+                t = transitions[key] = set([target])
+            elif target not in t:
+                # more than one target for this transition found
                 new_eq_classes.add(key)
-            else:
-                transitions[key] = set([target])
+                t.add(target)
 
     # create new states for newly found equivalence classes
     existing_eq_classes = {}
     eq_classes_by_state = {}
-    targets = set() # created here to reduce overhead in innermost loop
+    targets = set()  # created here to reduce overhead in innermost loop
     while new_eq_classes:
         eq_classes = new_eq_classes
         new_eq_classes = set()
