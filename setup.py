@@ -68,8 +68,8 @@ def read_readme():
 
 
 setup(
-    name = "acora",
-    version = version,
+    name="acora",
+    version=version,
     author="Stefan Behnel",
     author_email="stefan_ml@behnel.de",
     maintainer="Stefan Behnel",
@@ -81,7 +81,7 @@ setup(
 
     long_description=read_readme(),
 
-    classifiers = [
+    classifiers=[
     'Intended Audience :: Developers',
     'Intended Audience :: Information Technology',
     'License :: OSI Approved :: BSD License',
@@ -101,7 +101,7 @@ setup(
 
     # extension setup
 
-    ext_modules = extensions,
-    packages = ['acora'],
+    ext_modules=extensions,
+    packages=['acora'],
     **extra_options,
 )
