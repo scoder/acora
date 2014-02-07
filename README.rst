@@ -139,10 +139,12 @@ FAQs and recipes
 Changelog
 ----------
 
-* 1.8pre
+* 1.8
 
   - no longer recompiles sources when Cython is installed, unless
     ``--with-cython`` option is passed to setup.py
+  - build failed with recent Cython versions
+  - built using Cython 0.20.1
 
 * 1.7 [2011-08-24]
 
