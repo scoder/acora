@@ -23,7 +23,7 @@ cdef extern from * nogil:
 DEF FILE_BUFFER_SIZE = 32 * 1024
 
 ctypedef struct _AcoraUnicodeNodeStruct:
-    Py_UNICODE* characters
+    Py_UCS4* characters
     _AcoraUnicodeNodeStruct** targets
     PyObject** matches
     int char_count
@@ -33,6 +33,7 @@ ctypedef struct _AcoraBytesNodeStruct:
     _AcoraBytesNodeStruct** targets
     PyObject** matches
     int char_count
+
 
 # state machine building support
 
@@ -81,6 +82,7 @@ def build_NfaState(state_id, *args, **kwargs):
     state.matches = []
     return state
 
+
 # Unicode machine
 
 cdef _init_unicode_node(_AcoraUnicodeNodeStruct* c_node, state,
@@ -89,35 +91,44 @@ cdef _init_unicode_node(_AcoraUnicodeNodeStruct* c_node, state,
                         dict node_offsets, dict pyrefs):
     cdef size_t targets_mem_size, mem_size
     cdef Py_ssize_t i
+    cdef tuple matches
+    cdef unicode characters
 
     state_transitions.sort() # sort by characters
-    characters, targets = list(zip(*state_transitions))
-    characters = _intern(pyrefs, u''.join(characters))
-
-    c_node.characters = PyUnicode_AS_UNICODE(characters)
-    c_node.char_count = PyUnicode_GET_SIZE(characters)
+    chars, targets = list(zip(*state_transitions))
+    characters = u''.join(chars)
+    matches = tuple(state.matches) if state.matches else None
 
     # use a single malloc for targets and match-string pointers
     mem_size = targets_mem_size = sizeof(_AcoraUnicodeNodeStruct**) * len(targets)
-    if state.matches is not None and len(state.matches) > 0:
-        mem_size += sizeof(PyObject*) * (len(state.matches) + 1) # NULL terminated
+    if matches:
+        mem_size += sizeof(PyObject*) * (len(matches) + 1) # NULL terminated
+    mem_size += sizeof(Py_UCS4) * len(characters)
     c_node.targets = <_AcoraUnicodeNodeStruct**> cpython.mem.PyMem_Malloc(mem_size)
     if c_node.targets is NULL:
-        cpython.exc.PyErr_NoMemory()
+        raise MemoryError()
 
     for i, target in enumerate(targets):
         c_node.targets[i] = all_nodes + <size_t>node_offsets[target]
 
-    if mem_size == targets_mem_size:
+    if not matches:
         c_node.matches = NULL
+        c_characters = <Py_UCS4*> (c_node.targets + len(targets))
     else:
         c_node.matches = <PyObject**> (c_node.targets + len(targets))
-        matches = _intern(pyrefs, tuple(state.matches))
+        matches = _intern(pyrefs, matches)
         i = 0
         for match in matches:
             c_node.matches[i] = <PyObject*>match
             i += 1
         c_node.matches[i] = NULL
+        c_characters = <Py_UCS4*> (c_node.matches + i + 1)
+
+    for i, ch in enumerate(characters):
+        c_characters[i] = ord(ch)
+    c_node.characters = c_characters
+    c_node.char_count = len(characters)
+
 
 cdef _init_bytes_node(_AcoraBytesNodeStruct* c_node, state,
                       list state_transitions,
@@ -143,7 +154,7 @@ cdef _init_bytes_node(_AcoraBytesNodeStruct* c_node, state,
         mem_size += sizeof(PyObject*) * (len(state.matches) + 1) # NULL terminated
     c_node.targets = <_AcoraBytesNodeStruct**> cpython.mem.PyMem_Malloc(mem_size)
     if c_node.targets is NULL:
-        cpython.exc.PyErr_NoMemory()
+        raise MemoryError()
 
     for i, target in enumerate(targets):
         c_node.targets[i] = all_nodes + <size_t>node_offsets[target]
@@ -158,6 +169,7 @@ cdef _init_bytes_node(_AcoraBytesNodeStruct* c_node, state,
             c_node.matches[i] = <PyObject*>match
             i += 1
         c_node.matches[i] = NULL
+
 
 cdef inline _intern(dict d, obj):
     if obj in d:
@@ -197,7 +209,7 @@ cdef class UnicodeAcora:
         c_nodes = self.start_node = <_AcoraUnicodeNodeStruct*> cpython.mem.PyMem_Malloc(
             sizeof(_AcoraUnicodeNodeStruct) * self.node_count)
         if c_nodes is NULL:
-            cpython.exc.PyMem_NoMemory()
+            raise MemoryError()
 
         for i in range(self.node_count):
             # required by __dealloc__ in case of subsequent errors
@@ -229,6 +241,7 @@ cdef class UnicodeAcora:
         """
         return list(self.finditer(data))
 
+
 cdef class _UnicodeAcoraIter:
     cdef _AcoraUnicodeNodeStruct* current_node
     cdef _AcoraUnicodeNodeStruct* start_node
@@ -253,8 +266,8 @@ cdef class _UnicodeAcoraIter:
     def __next__(self):
         cdef Py_UNICODE* data_char = self.data_char
         cdef Py_UNICODE* data_end = self.data_end
-        cdef Py_UNICODE* test_chars
-        cdef Py_UNICODE current_char
+        cdef Py_UCS4* test_chars
+        cdef Py_UCS4 current_char
         cdef int i, found = 0, start, mid, end
         cdef _AcoraUnicodeNodeStruct* start_node = self.start_node
         cdef _AcoraUnicodeNodeStruct* current_node = self.current_node
@@ -327,7 +340,7 @@ cdef class BytesAcora:
         c_nodes = self.start_node = <_AcoraBytesNodeStruct*> cpython.mem.PyMem_Malloc(
             sizeof(_AcoraBytesNodeStruct) * self.node_count)
         if c_nodes is NULL:
-            cpython.exc.PyMem_NoMemory()
+            raise MemoryError()
 
         for i in range(self.node_count):
             # required by __dealloc__ in case of subsequent errors
@@ -364,6 +377,7 @@ cdef class BytesAcora:
 
     def filefindall(self, f):
         return list(self.filefind(f))
+
 
 cdef class _BytesAcoraIter:
     cdef _AcoraBytesNodeStruct* current_node
@@ -407,6 +421,7 @@ cdef class _BytesAcoraIter:
         match = <bytes> self.current_node.matches[self.match_index]
         self.match_index += 1
         return (match, <Py_ssize_t>(self.data_char - self.data_start) - len(match))
+
 
 cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
                           unsigned char* data_end,
@@ -452,6 +467,7 @@ cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
     _data_char[0] = data_char
     _current_node[0] = current_node
     return found
+
 
 # file data handling
 
