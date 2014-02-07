@@ -75,6 +75,20 @@ Iterate over the search results as they come in::
      b[1]
     de[2]
 
+Acora also has direct support for parsing files (in binary mode)::
+
+    >>> keywords = ['Import', 'FAQ', 'Acora', 'NotHere'.upper()]
+
+    >>> builder = AcoraBuilder([s.encode('ascii') for s in keywords])
+    >>> ac = builder.build()
+
+    >>> found = set(kw for kw, pos in ac.filefind('README.rst'))
+    >>> len(found)
+    3
+
+    >>> sorted(str(s.decode('ascii')) for s in found)
+    ['Acora', 'FAQ', 'Import']
+
 
 FAQs and recipes
 -----------------
