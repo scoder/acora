@@ -30,6 +30,7 @@ except NameError:
 
 FILE_BUFFER_SIZE = 32 * 1024
 
+
 class PyAcora(object):
     """A simple (and very slow) Python implementation of the Acora
     search engine.
@@ -99,6 +100,7 @@ class PyAcora(object):
         """
         return list(self.filefind(f))
 
+
 try:
     from acora._nfa2dfa import nfa2dfa, insert_keyword, NfaState
 except ImportError:
@@ -109,6 +111,7 @@ try:
 except ImportError:
     # C module not there ...
     UnicodeAcora = BytesAcora = PyAcora
+
 
 class AcoraBuilder(object):
     """The main builder class for an Acora search engine.
@@ -163,6 +166,7 @@ class AcoraBuilder(object):
             self.state_counter = insert_keyword(
                 self.tree, keyword, self.state_counter)
 
+
 ### convenience functions
 
 def search(s, *keywords):
@@ -170,6 +174,7 @@ def search(s, *keywords):
     """
     acora  = AcoraBuilder(keywords).build()
     return acora.findall(s)
+
 
 def search_ignore_case(s, *keywords):
     """Convenience function to search a string for keywords.  Case
