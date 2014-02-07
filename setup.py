@@ -103,5 +103,5 @@ setup(
 
     ext_modules=extensions,
     packages=['acora'],
-    **extra_options,
+    **extra_options
 )
