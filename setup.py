@@ -1,8 +1,13 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 from distutils.extension import Extension
 
 import sys
 import os.path
+
+version = "1.8pre"
 
 SOURCES = ["acora/_acora", "acora/_nfa2dfa"]
 BASEDIR = os.path.dirname(__file__)
@@ -46,7 +51,21 @@ else:
     extensions = []
 
 
-version = "1.8pre"
+extra_options = {}
+if 'setuptools' in sys.modules:
+    extra_options['zip_safe'] = False
+    extra_options['extra_require'] = {
+        'source': 'Cython>=0.20.1',
+    }
+
+
+def read_readme():
+    f = open('README.rst')
+    try:
+        return f.read()
+    finally:
+        f.close()
+
 
 setup(
     name = "acora",
@@ -60,7 +79,7 @@ setup(
 
     description="Fast multi-keyword search engine for text strings",
 
-    long_description = open('README.rst').read(),
+    long_description=read_readme(),
 
     classifiers = [
     'Intended Audience :: Developers',
@@ -84,4 +103,5 @@ setup(
 
     ext_modules = extensions,
     packages = ['acora'],
+    **extra_options,
 )
