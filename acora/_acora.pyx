@@ -203,19 +203,26 @@ cdef dict group_transitions_by_state(dict transitions):
 
 """
 cdef _dump_transitions(dict transitions_by_state):
-    with open('out.dot', 'wb') as f:
-        f.write(b'digraph {\n')
+    try:
+        from io import open
+    except ImportError:
+        from codecs import open
+
+    with open('out.dot', 'w', encoding='utf8') as f:
+        f.write('digraph {\n')
         for state, targets in transitions_by_state.iteritems():
             for character, target in targets:
-                if isinstance(character, unicode):
-                    character = (<unicode>character).encode('utf-8')
+                if isinstance(character, bytes):
+                    character = (<bytes>character).decode('iso8859-1')
+                elif isinstance(character, int):
+                    character = chr(character)
                 if target.id > 1:
-                    f.write(b'    "%s" -> "%s" [label="%s", color=%s];\n' % (
+                    f.write('    "%s" -> "%s" [label="%s", color=%s];\n' % (
                         state.id, target.id,
-                        character.replace(b'"', b'\\"'),
-                        b'red' if target.matches else b'black',
+                        character.replace('"', '\\"'),
+                        'red' if target.matches else 'black',
                     ))
-        f.write(b'}\n')
+        f.write('}\n')
 """
 
 
