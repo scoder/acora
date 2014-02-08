@@ -72,7 +72,7 @@ def compare_search(s, filename, ignore_case, *keywords):
         else:
             regexp = re.compile(kw_regexp)
         setup_re = time() - t
-    print("Case %ssensitive %s - setup times: PA: %.4f, CA: %.4f, RE: %.4f" % (
+    print("Case %ssensitive %s\n- setup times: PA: %.4f, CA: %.4f, RE: %.4f" % (
             ignore_case and 'in' or '',
             builder.for_unicode and 'unicode' or 'bytes',
             setup_pya, setup_ca, setup_re))
