@@ -35,6 +35,8 @@ except ValueError:
 
     if USE_CYTHON:
         from Cython.Build import cythonize
+        import Cython
+        print("Building with Cython %s" % Cython.__version__)
     else:
         def cythonize(extensions):
             for extension in extensions:
