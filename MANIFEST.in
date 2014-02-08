@@ -2,4 +2,4 @@ exclude *.py *.txt
 include setup.py bench.py test.py
 include MANIFEST.in LICENSE.txt README.rst
 include testall.sh
-recursive-include acora *.py *.pyx *.pxd *.c
+recursive-include acora *.py *.pyx *.pxd *.c *.h
