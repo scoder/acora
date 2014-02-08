@@ -185,15 +185,19 @@ class AcoraTest(object):
             self._result([('a', 0), ('b', 1), ('c', 2)]))
 
     def test_pickle_machine_new(self):
-        import pickle
         s = self._swrap
 
         builder = acora.AcoraBuilder(*list(map(s, ['a', 'bc', 'c'])))
         ac = builder.build(acora=self.acora)
-        p = pickle.dumps(ac)
-        del builder, ac
-        ac = pickle.loads(p)
 
+        import pickle
+        p = pickle.dumps(ac)
+
+        del builder, ac
+        import gc
+        gc.collect()
+
+        ac = pickle.loads(p)
         self.assertEqual(
             sorted(ac.finditer(s('abcd'))),
             self._result([('a', 0), ('bc', 1), ('c', 2)]))
