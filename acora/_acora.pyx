@@ -87,8 +87,8 @@ cdef class _NfaState(dict):
         return state
 
 
-def build_NfaState(state_id, *args, **kwargs):
-    cdef _NfaState state = _NfaState(*args, **kwargs)
+def build_NfaState(state_id):
+    cdef _NfaState state = _NfaState()
     state.id = state_id
     state.matches = []
     return state

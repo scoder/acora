@@ -63,17 +63,17 @@ def insert_keyword(tree, keyword, state_id):
 
 # NFA to DFA transformation
 
-def _visit_all(tree, visitor):
-    visitor(tree)
+def _collect(tree, collected):
+    collected.append(tree)
     for node in tree.values():
-        _visit_all(node, visitor)
+        _collect(node, collected)
 
 
 def nfa2dfa(tree, ignore_case):
     """Transform a keyword tree into a DFA using powerset construction.
     """
     states = []
-    _visit_all(tree, states.append)
+    _collect(tree, states)
     next_state_id = len(states)
 
     # run through all states and collect all transitions, including
@@ -107,22 +107,21 @@ def nfa2dfa(tree, ignore_case):
     eq_classes_by_state = {}
     targets = set()  # created here to reduce overhead in innermost loop
     while new_eq_classes:
-        eq_classes = new_eq_classes
-        new_eq_classes = set()
+        eq_classes = list(new_eq_classes)
+        new_eq_classes.clear()
         for key in eq_classes:
-            eq_states = transitions[key]
+            eq_states = frozenset(transitions[key])
             if len(eq_states) < 2:
                 continue
-            eq_key = tuple(sorted([s.id for s in eq_states]))
-            if eq_key in existing_eq_classes:
-                transitions[key] = set([existing_eq_classes[eq_key]])
+            if eq_states in existing_eq_classes:
+                transitions[key] = set([existing_eq_classes[eq_states]])
                 continue
 
             # create a new joined state
             new_state = NfaState(next_state_id)
 
             eq_classes_by_state[new_state] = eq_states
-            existing_eq_classes[eq_key] = new_state
+            existing_eq_classes[eq_states] = new_state
             next_state_id += 1
 
             # redirect the original transition to the new node
@@ -132,7 +131,8 @@ def nfa2dfa(tree, ignore_case):
             matches = []
             new_chars = chars_by_state[new_state] = set()
             for state in eq_states:
-                matches.extend(state.matches)
+                if state.matches:
+                    matches.extend(state.matches)
                 transition_chars = chars_by_state[state]
                 new_chars.update(transition_chars)
                 for char in transition_chars:
@@ -145,19 +145,39 @@ def nfa2dfa(tree, ignore_case):
                     new_key = (new_state,char)
                     if new_key in transitions:
                         transitions[new_key].update(targets)
+                        new_eq_classes.add(new_key)
                         targets.clear()
                     else:
                         transitions[new_key] = targets
+                        if len(targets) > 1:
+                            new_eq_classes.add(new_key)
                         targets = set()
-                    new_eq_classes.add(new_key)
-            # sort longest match first to assure left-to-right match order
-            matches.sort(key=len, reverse=True)
-            new_state.matches = matches
+            if matches:
+                # sort longest match first to assure left-to-right match order
+                matches.sort(key=len, reverse=True)
+                new_state.matches = matches
 
     # rebuild transitions dict to point to exactly one state
+    targets = set()
     for key, state_set in transitions.items():
         assert len(state_set) == 1
-        transitions[key] = state_set.pop()
+        target = state_set.pop()
+        targets.add(target)
+        transitions[key] = target
+
+    # prune unreachable states (completely replaced by equivalence classes)
+    unreachable = set()
+    while True:
+        targets.add(tree)
+        for key in transitions:
+            if key[0] not in targets:
+                unreachable.add(key)
+        if not unreachable:
+            break
+        for key in unreachable:
+            del transitions[key]
+        unreachable.clear()
+        targets = set(transitions.values())
 
     # duplicate the transitions for case insensitive parsing
     if ignore_case:
