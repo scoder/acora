@@ -89,47 +89,47 @@ class AcoraTest(object):
     def test_finditer_single_keyword(self):
         s = self._swrap
         finditer = self._build('bc').finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('abcd'))),
             self._result([('bc', 1)]))
 
     def test_finditer_many_keywords(self):
         s = self._swrap
         finditer = self._build(*string.ascii_letters).finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2), ('d', 3)]))
 
     def test_finditer_many_keywords_not_found(self):
         s = self._swrap
         finditer = self._build(*string.ascii_letters).finditer
-        self.assertEquals(sorted(finditer(s(string.digits*100))), [])
+        self.assertEqual(sorted(finditer(s(string.digits*100))), [])
 
     def test_finditer_sequential(self):
         s = self._swrap
         finditer = self._build('a', 'b', 'c', 'd').finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2), ('d', 3)]))
 
     def test_finditer_redundant(self):
         s = self._swrap
         finditer = self._build('a', 'b', 'A', 'B').finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('AaBb'))),
             self._result([('A', 0), ('B', 2), ('a', 1), ('b', 3)]))
 
     def test_finditer_overlap(self):
         s = self._swrap
         finditer = self._build('a', 'ab', 'abc', 'abcd').finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('abcd'))),
             self._result([('a', 0), ('ab', 0), ('abc', 0), ('abcd', 0)]))
 
     def test_finditer_reverse_overlap(self):
         s = self._swrap
         finditer = self._build('d', 'cd', 'bcd', 'abcd').finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('abcd'))),
             self._result([('abcd', 0), ('bcd', 1), ('cd', 2), ('d', 3)]))
 
@@ -144,11 +144,11 @@ class AcoraTest(object):
         finditer1 = builder1.build(acora=self.acora).finditer
         finditer2 = builder2.build(acora=self.acora).finditer
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer1(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2)]))
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer2(s('abcd'))),
             self._result([('a', 0), ('ab', 0), ('b', 1), ('bc', 1), ('c', 2)]))
 
@@ -160,11 +160,11 @@ class AcoraTest(object):
         ac1 = builder.build(acora=self.acora)
         ac2 = deepcopy(ac1)
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(ac1.finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2)]))
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(ac2.finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2)]))
 
@@ -176,11 +176,11 @@ class AcoraTest(object):
         ac1 = builder.build(acora=self.acora)
         ac2 = pickle.loads(pickle.dumps(ac1))
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(ac1.finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2)]))
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(ac2.finditer(s('abcd'))),
             self._result([('a', 0), ('b', 1), ('c', 2)]))
 
@@ -194,7 +194,7 @@ class AcoraTest(object):
         del builder, ac
         ac = pickle.loads(p)
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(ac.finditer(s('abcd'))),
             self._result([('a', 0), ('bc', 1), ('c', 2)]))
 
@@ -230,29 +230,29 @@ class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
 
         line_matches.append(tuple(current_line_matches))
 
-        self.assertEquals(line, 5)
-        self.assertEquals(
+        self.assertEqual(line, 5)
+        self.assertEqual(
             line_matches,
             [('a', 'a'), ('b',), ('b', 'c'), (), ('c', 'd'), ('d',)])
 
     def test_finditer_single_keyword_unicode(self):
         s = self._swrap
         finditer = self._build("\\uF8D2").finditer
-        self.assertEquals(
+        self.assertEqual(
             list(finditer(s("\\uF8D1\\uF8D2\\uF8D3"))),
             self._result([("\\uF8D2", 1)]))
 
     def test_finditer_single_keyword_non_bmp(self):
         s = self._swrap
         finditer = self._build("\\U0001F8D2").finditer
-        self.assertEquals(
+        self.assertEqual(
             list(finditer(s("\\U0001F8D1\\U0001F8D2\\uF8D3"))),
             self._result([("\\U0001F8D2", 1)]))
 
     def test_finditer_ignore_case(self):
         s = self._swrap
         finditer = self._build_ignore_case('a', 'b', 'c', 'd').finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('AaBbCcDd'))),
             self._result([('a', 0), ('a', 1), ('b', 2), ('b', 3),
                           ('c', 4), ('c', 5), ('d', 6), ('d', 7)]))
@@ -260,7 +260,7 @@ class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
     def test_finditer_ignore_case_redundant(self):
         s = self._swrap
         finditer = self._build_ignore_case('a', 'b', 'A', 'B').finditer
-        self.assertEquals(
+        self.assertEqual(
             sorted(finditer(s('AaBb'))),
             self._result([('A', 0), ('A', 1), ('B', 2), ('B', 3),
                           ('a', 0), ('a', 1), ('b', 2), ('b', 3)]))
@@ -298,51 +298,51 @@ class BytesAcoraTest(unittest.TestCase, AcoraTest):
                                'bdeg'.encode('ASCII')).filefind
         data = BytesIO(self.search_string)
         result = list(filefind(data))
-        self.assertEquals(len(result), 6000)
+        self.assertEqual(len(result), 6000)
 
     def test_large_filelike_searching_check(self):
         ac = self._build(*self.simple_kwds)
         data = BytesIO(self.simple_data)
         result = list(ac.filefind(data))
-        self.assertEquals(result, self.expected_result)
+        self.assertEqual(result, self.expected_result)
 
     def test_file_searching(self):
         ac = self._build([ kw.encode('ASCII')
                            for kw in ('a', 'b', 'ab', 'abc') ])
         result = self._search_in_file(ac, 'abbabc')
-        self.assertEquals(len(result), 8)
+        self.assertEqual(len(result), 8)
 
     def test_large_file_searching(self):
         ac = self._build('SADHFCAL'.encode('ASCII'),
                          'bdeg'.encode('ASCII'))
         result = self._search_in_file(ac, self.search_string)
-        self.assertEquals(len(result), 6000)
+        self.assertEqual(len(result), 6000)
 
     def test_large_file_searching_check(self):
         ac = self._build(*self.simple_kwds)
         result = self._search_in_file(ac, self.simple_data)
-        self.assertEquals(result, self.expected_result)
+        self.assertEqual(result, self.expected_result)
 
     def test_binary_data_search(self):
         pattern = self._swrap('\xa5\x66\x80')
         ac = self._build(pattern)
         mainString = self._swrap(10 * '\xf0') + pattern + self._swrap(10 * '\xf0')
         result = ac.findall(mainString)
-        self.assertEquals(result, [(pattern, 10)])
+        self.assertEqual(result, [(pattern, 10)])
 
     def test_binary_data_search_start(self):
         pattern = self._swrap('\xa5\x66\x80')
         ac = self._build(pattern)
         mainString = pattern + self._swrap(10 * '\xf0')
         result = ac.findall(mainString)
-        self.assertEquals(result, [(pattern, 0)])
+        self.assertEqual(result, [(pattern, 0)])
 
     def test_binary_data_search_end(self):
         pattern = self._swrap('\xa5\x66\x80')
         ac = self._build(pattern)
         mainString = self._swrap(10 * '\xf0') + pattern
         result = ac.findall(mainString)
-        self.assertEquals(result, [(pattern, 10)])
+        self.assertEqual(result, [(pattern, 10)])
 
 
 class PyUnicodeAcoraTest(UnicodeAcoraTest):
