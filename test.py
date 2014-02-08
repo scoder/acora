@@ -151,7 +151,39 @@ class AcoraTest(object):
         self.assertEquals(
             sorted(finditer2(s('abcd'))),
             self._result([('a', 0), ('ab', 0), ('b', 1), ('bc', 1), ('c', 2)]))
-        
+
+    def test_deepcopy_machine(self):
+        from copy import deepcopy
+        s = self._swrap
+
+        builder = acora.AcoraBuilder(*list(map(s, ['a', 'b', 'c'])))
+        ac1 = builder.build(acora=self.acora)
+        ac2 = deepcopy(ac1)
+
+        self.assertEquals(
+            sorted(ac1.finditer(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2)]))
+
+        self.assertEquals(
+            sorted(ac2.finditer(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2)]))
+
+    def test_pickle_machine(self):
+        import pickle
+        s = self._swrap
+
+        builder = acora.AcoraBuilder(*list(map(s, ['a', 'b', 'c'])))
+        ac1 = builder.build(acora=self.acora)
+        ac2 = pickle.loads(pickle.dumps(ac1))
+
+        self.assertEquals(
+            sorted(ac1.finditer(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2)]))
+
+        self.assertEquals(
+            sorted(ac2.finditer(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2)]))
+
 
 class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
     # only unicode data tests

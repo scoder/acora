@@ -86,11 +86,16 @@ cdef class _NfaState(dict):
         state.matches = self.matches[:]
         return state
 
+    def __reduce__(self):
+        """pickle"""
+        return (build_NfaState, (self.id, self.matches),
+                None, None, iter(self.items()))
 
-def build_NfaState(state_id):
+
+cpdef _NfaState build_NfaState(state_id, list matches=None):
     cdef _NfaState state = _NfaState()
     state.id = state_id
-    state.matches = []
+    state.matches = [] if matches is None else matches
     return state
 
 
@@ -267,6 +272,30 @@ cdef class UnicodeAcora:
                     cpython.mem.PyMem_Free(self.start_node[i].targets)
             cpython.mem.PyMem_Free(self.start_node)
 
+    def __reduce__(self):
+        """pickle"""
+        cdef _AcoraUnicodeNodeStruct* c_node
+        states = {}
+        for c_node in self.start_node[:self.node_count]:
+            state_id = c_node - self.start_node
+            state = states[state_id] = build_NfaState(state_id)
+            if c_node.matches:
+                match = c_node.matches
+                while match[0]:
+                    state.matches.append(<unicode>match[0])
+                    match += 1
+
+        transitions = {}
+        for c_node in self.start_node[:self.node_count]:
+            state_id = c_node - self.start_node
+            state = states[state_id]
+            for i in range(c_node.char_count):
+                ch = <unicode>c_node.characters[i]
+                target_id = c_node.targets[i] - self.start_node
+                transitions[(state, ch)] = states[target_id]
+
+        return type(self), (states[0], transitions)
+
     cpdef finditer(self, unicode data):
         """Iterate over all occurrences of any keyword in the string.
 
@@ -411,6 +440,31 @@ cdef class BytesAcora:
                 if self.start_node[i].targets is not NULL:
                     cpython.mem.PyMem_Free(self.start_node[i].targets)
             cpython.mem.PyMem_Free(self.start_node)
+
+    def __reduce__(self):
+        """pickle"""
+        cdef _AcoraBytesNodeStruct* c_node
+        states = {}
+        for c_node in self.start_node[:self.node_count]:
+            state_id = c_node - self.start_node
+            state = states[state_id] = build_NfaState(state_id)
+            if c_node.matches:
+                match = c_node.matches
+                while match[0]:
+                    state.matches.append(<bytes>match[0])
+                    match += 1
+
+        transitions = {}
+        for c_node in self.start_node[:self.node_count]:
+            state_id = c_node - self.start_node
+            state = states[state_id]
+            for i in range(c_node.char_count):
+                ch = c_node.characters[i]
+                character = <bytes>ch if PY_MAJOR_VERSION < 3 else ch
+                target_id = c_node.targets[i] - self.start_node
+                transitions[(state, character)] = states[target_id]
+
+        return type(self), (states[0], transitions)
 
     cpdef finditer(self, bytes data):
         """Iterate over all occurrences of any keyword in the string.
