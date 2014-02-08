@@ -89,13 +89,13 @@ def nfa2dfa(tree, ignore_case):
         for char, target in state.items():
             if ignore_case:
                 char = char.lower()
-            transitions[(state,char)] = set([target])
+            transitions[(state, char)] = set([target])
             chars.add(char)
         for char, target in start_state_transitions:
             if ignore_case:
                 char = char.lower()
             chars.add(char)
-            key = (state,char)
+            key = (state, char)
             t = transitions.get(key)
             if t is None:
                 t = transitions[key] = set([target])
@@ -139,7 +139,7 @@ def nfa2dfa(tree, ignore_case):
                 new_chars.update(transition_chars)
                 for char in transition_chars:
                     # resolve original states from equivalence class states
-                    for target in transitions[(state,char)]:
+                    for target in transitions[(state, char)]:
                         if target in eq_classes_by_state:
                             targets.update(eq_classes_by_state[target])
                         else:
@@ -182,8 +182,8 @@ def nfa2dfa(tree, ignore_case):
 
     # duplicate the transitions for case insensitive parsing
     if ignore_case:
-        for (state,char), target in list(transitions.items()):
-            transitions[(state,char.upper())] = target
+        for (state, char), target in list(transitions.items()):
+            transitions[(state, char.upper())] = target
 
     # return start state and transitions
     return tree, transitions
