@@ -155,6 +155,7 @@ Changelog
 
 * 1.8
 
+  - performance optimisations in builder
   - Unicode parsing is optimised for Python 3.3 and later
   - no longer recompiles sources when Cython is installed, unless
     ``--with-cython`` option is passed to setup.py
