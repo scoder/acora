@@ -40,11 +40,13 @@ class NfaState(dict):
         state.matches[:] = self.matches
         return state
 
+
 try:
     from acora._acora import build_NfaState as NfaState
 except ImportError:
     # no C implementation there
     pass
+
 
 def insert_keyword(tree, keyword, state_id):
     if not keyword:
@@ -159,11 +161,10 @@ def nfa2dfa(tree, ignore_case):
 
     # rebuild transitions dict to point to exactly one state
     targets = set()
-    for key, state_set in transitions.items():
+    for key, state_set in transitions.iteritems():
         assert len(state_set) == 1
-        target = state_set.pop()
+        target = transitions[key] = state_set.pop()
         targets.add(target)
-        transitions[key] = target
 
     # prune unreachable states (completely replaced by equivalence classes)
     unreachable = set()
