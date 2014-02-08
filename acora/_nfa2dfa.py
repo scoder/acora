@@ -144,7 +144,7 @@ def nfa2dfa(tree, ignore_case):
                             targets.update(eq_classes_by_state[target])
                         else:
                             targets.add(target)
-                    new_key = (new_state,char)
+                    new_key = (new_state, char)
                     if new_key in transitions:
                         transitions[new_key].update(targets)
                         new_eq_classes.add(new_key)
