@@ -109,8 +109,8 @@ def nfa2dfa(tree, ignore_case):
     eq_classes_by_state = {}
     targets = set()  # created here to reduce overhead in innermost loop
     while new_eq_classes:
-        eq_classes = list(new_eq_classes)
-        new_eq_classes.clear()
+        eq_classes = new_eq_classes
+        new_eq_classes = set()
         for key in eq_classes:
             eq_states = frozenset(transitions[key])
             if len(eq_states) < 2:
