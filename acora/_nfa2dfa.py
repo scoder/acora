@@ -98,7 +98,7 @@ def nfa2dfa(tree, ignore_case):
             key = (state, char)
             t = transitions.get(key)
             if t is None:
-                t = transitions[key] = set([target])
+                transitions[key] = set([target])
             elif target not in t:
                 # more than one target for this transition found
                 new_eq_classes.add(key)
