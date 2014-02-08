@@ -244,9 +244,11 @@ cdef class UnicodeAcora:
         cdef _AcoraUnicodeNodeStruct* c_nodes
         cdef Py_ssize_t i
         self.start_node = NULL
-        cdef dict transitions_by_state = group_transitions_by_state(transitions)
+        # sort states by id (start state first)
+        states = sorted(group_transitions_by_state(transitions).items(),
+                        key=lambda t: t[0].id)
 
-        self.node_count = len(transitions_by_state)
+        self.node_count = len(states)
         c_nodes = self.start_node = <_AcoraUnicodeNodeStruct*> cpython.mem.PyMem_Malloc(
             sizeof(_AcoraUnicodeNodeStruct) * self.node_count)
         if c_nodes is NULL:
@@ -256,9 +258,10 @@ cdef class UnicodeAcora:
             # required by __dealloc__ in case of subsequent errors
             c_nodes[i].targets = NULL
 
-        node_offsets = dict([ (state, i) for i,state in enumerate(transitions_by_state) ])
+        node_offsets = dict([
+            (state, i) for i,(state, state_transitions) in enumerate(states)])
         pyrefs = {} # used to keep Python references alive (and intern them)
-        for i, (state, state_transitions) in enumerate(transitions_by_state.iteritems()):
+        for i, (state, state_transitions) in enumerate(states):
             _init_unicode_node(&c_nodes[i], state, state_transitions,
                                c_nodes, node_offsets, pyrefs)
 
@@ -321,7 +324,8 @@ cdef class _UnicodeAcoraIter:
     cdef int unicode_kind
 
     def __cinit__(self, UnicodeAcora acora not None, unicode data not None):
-        assert acora.start_node is not NULL and acora.start_node.matches is NULL
+        assert acora.start_node is not NULL
+        assert acora.start_node.matches is NULL
         self.acora = acora
         self.start_node = self.current_node = acora.start_node
         self.match_index = 0
@@ -413,9 +417,11 @@ cdef class BytesAcora:
         cdef _AcoraBytesNodeStruct* c_nodes
         cdef Py_ssize_t i
         self.start_node = NULL
-        cdef dict transitions_by_state = group_transitions_by_state(transitions)
+        # sort states by id (start state first)
+        states = sorted(group_transitions_by_state(transitions).items(),
+                        key=lambda t: t[0].id)
 
-        self.node_count = len(transitions_by_state)
+        self.node_count = len(states)
         c_nodes = self.start_node = <_AcoraBytesNodeStruct*> cpython.mem.PyMem_Malloc(
             sizeof(_AcoraBytesNodeStruct) * self.node_count)
         if c_nodes is NULL:
@@ -425,9 +431,10 @@ cdef class BytesAcora:
             # required by __dealloc__ in case of subsequent errors
             c_nodes[i].targets = NULL
 
-        node_offsets = dict([ (state, i) for i,state in enumerate(transitions_by_state) ])
+        node_offsets = dict([
+            (state, i) for i,(state, state_transitions) in enumerate(states)])
         pyrefs = {} # used to keep Python references alive (and intern them)
-        for i, (state, state_transitions) in enumerate(transitions_by_state.iteritems()):
+        for i, (state, state_transitions) in enumerate(states):
             _init_bytes_node(&c_nodes[i], state, state_transitions,
                              c_nodes, node_offsets, pyrefs)
 
