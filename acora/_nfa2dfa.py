@@ -156,7 +156,8 @@ def nfa2dfa(tree, ignore_case):
                         targets = set()
             if matches:
                 # sort longest match first to assure left-to-right match order
-                matches.sort(key=len, reverse=True)
+                if len(matches) > 1:
+                    matches.sort(key=len, reverse=True)
                 new_state.matches = matches
 
     # rebuild transitions dict to point to exactly one state
