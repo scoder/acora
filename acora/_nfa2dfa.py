@@ -89,7 +89,7 @@ def nfa2dfa(tree, ignore_case):
         for char, target in state.items():
             if ignore_case:
                 char = char.lower()
-            transitions[(state, char)] = set([target])
+            transitions[(state, char)] = [target]
             chars.add(char)
         for char, target in start_state_transitions:
             if ignore_case:
@@ -98,16 +98,15 @@ def nfa2dfa(tree, ignore_case):
             key = (state, char)
             t = transitions.get(key)
             if t is None:
-                transitions[key] = set([target])
+                transitions[key] = [target]
             elif target not in t:
                 # more than one target for this transition found
                 new_eq_classes.add(key)
-                t.add(target)
+                t.append(target)
 
     # create new states for newly found equivalence classes
     existing_eq_classes = {}
     eq_classes_by_state = {}
-    targets = set()  # created here to reduce overhead in innermost loop
     while new_eq_classes:
         eq_classes = new_eq_classes
         new_eq_classes = set()
@@ -116,7 +115,7 @@ def nfa2dfa(tree, ignore_case):
             if len(eq_states) < 2:
                 continue
             if eq_states in existing_eq_classes:
-                transitions[key] = set([existing_eq_classes[eq_states]])
+                transitions[key] = [existing_eq_classes[eq_states]]
                 continue
 
             # create a new joined state
@@ -127,7 +126,7 @@ def nfa2dfa(tree, ignore_case):
             next_state_id += 1
 
             # redirect the original transition to the new node
-            transitions[key] = set([new_state])
+            transitions[key] = [new_state]
 
             # collect its transitions and matches
             matches = []
@@ -139,32 +138,30 @@ def nfa2dfa(tree, ignore_case):
                 new_chars.update(transition_chars)
                 for char in transition_chars:
                     # resolve original states from equivalence class states
-                    for target in transitions[(state, char)]:
-                        if target in eq_classes_by_state:
-                            targets.update(eq_classes_by_state[target])
-                        else:
-                            targets.add(target)
+                    added = False
                     new_key = (new_state, char)
-                    if new_key in transitions:
-                        transitions[new_key].update(targets)
+                    old_targets = transitions.setdefault(new_key, [])
+                    for target in transitions[(state, char)]:
+                        for t in eq_classes_by_state.get(target, (target,)):
+                            if t not in old_targets:
+                                old_targets.append(t)
+                                added = True
+                    if added and len(old_targets) > 1:
                         new_eq_classes.add(new_key)
-                        targets.clear()
-                    else:
-                        transitions[new_key] = targets
-                        if len(targets) > 1:
-                            new_eq_classes.add(new_key)
-                        targets = set()
+
             if matches:
                 # sort longest match first to assure left-to-right match order
                 if len(matches) > 1:
                     matches.sort(key=len, reverse=True)
                 new_state.matches = matches
 
+    new_eq_classes = existing_eq_classes = eq_classes_by_state = None
+
     # rebuild transitions dict to point to exactly one state
     targets = set()
-    for key, state_set in transitions.iteritems():
+    for key, state_set in transitions.items():
         assert len(state_set) == 1
-        target = transitions[key] = state_set.pop()
+        target = transitions[key] = state_set[0]
         targets.add(target)
 
     # prune unreachable states (completely replaced by equivalence classes)
