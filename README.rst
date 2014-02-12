@@ -118,7 +118,7 @@ FAQs and recipes
     ab
     abc
 
-#) how do I parse line-by-line, as fgrep does, but with arbitrary line endings?
+#) how do I parse line-by-line with arbitrary line endings?
 
     >>> def group_by_lines(s, *keywords):
     ...     builder = AcoraBuilder('\r', '\n', *keywords)
@@ -148,6 +148,34 @@ FAQs and recipes
     ('de', 'de')
     ()
     ('ab',)
+
+
+#) how do I find whole lines that contain keywords, as fgrep does?
+
+    >>> def match_lines(s, *keywords):
+    ...     builder = AcoraBuilder('\r', '\n', *keywords)
+    ...     ac = builder.build()
+    ...
+    ...     line_start = 0
+    ...     matches = False
+    ...     for kw, pos in ac.finditer(s):
+    ...         if kw in '\r\n':
+    ...             if matches:
+    ...                  yield s[line_start:pos]
+    ...                  matches = False
+    ...             line_start = pos + 1
+    ...         else:
+    ...             matches = True
+    ...     if matches:
+    ...         yield s[line_start:]
+
+    >>> kwds = ['x', 'de', '\nstart']
+    >>> text = 'a line with\r\r\nsome text\r\ndede\n\nab\n start 1\nstart\n'
+    >>> for line in match_lines(text, *kwds):
+    ...     print(line)
+    some text
+    dede
+    start
 
 
 Changelog
