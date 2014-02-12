@@ -153,13 +153,13 @@ FAQs and recipes
 Changelog
 ----------
 
-* 1.8
+* 1.8 [2014-02-12]
 
   - pickle support for the pre-built search engines
   - performance optimisations in builder
   - Unicode parsing is optimised for Python 3.3 and later
   - no longer recompiles sources when Cython is installed, unless
-    ``--with-cython`` option is passed to setup.py
+    ``--with-cython`` option is passed to setup.py (requires Cython 0.20+)
   - build failed with recent Cython versions
   - built using Cython 0.20.1
 

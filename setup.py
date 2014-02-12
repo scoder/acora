@@ -7,7 +7,7 @@ from distutils.extension import Extension
 import sys
 import os.path
 
-version = "1.8pre"
+version = "1.8"
 
 SOURCES = ["acora/_acora", "acora/_nfa2dfa"]
 BASEDIR = os.path.dirname(__file__)
