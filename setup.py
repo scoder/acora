@@ -7,7 +7,7 @@ from distutils.extension import Extension
 import sys
 import os.path
 
-version = "1.8"
+version = "1.9"
 
 SOURCES = ["acora/_acora", "acora/_nfa2dfa"]
 BASEDIR = os.path.dirname(__file__)
@@ -77,7 +77,6 @@ setup(
     maintainer="Stefan Behnel",
     maintainer_email="stefan_ml@behnel.de",
     url="http://pypi.python.org/pypi/acora",
-    download_url="http://pypi.python.org/packages/source/a/acora/acora-%s.tar.gz" % version,
 
     description="Fast multi-keyword search engine for text strings",
 
@@ -89,14 +88,13 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Cython',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Operating System :: OS Independent',
         'Topic :: Text Processing',
     ],

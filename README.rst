@@ -181,6 +181,11 @@ FAQs and recipes
 Changelog
 ----------
 
+* 1.9 [2015-10-10]
+
+  - recompiled with Cython 0.23.4 for better compatibility with recent
+    Python versions.
+
 * 1.8 [2014-02-12]
 
   - pickle support for the pre-built search engines
