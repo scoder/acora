@@ -4,7 +4,7 @@ Simple test suite for acora.
 
 import acora
 
-DOTDEBUG = False
+DOTDEBUG = True  # False
 
 if acora.BytesAcora is acora.PyAcora or acora.UnicodeAcora is acora.PyAcora:
     print("WARNING: '_acora' C extension not imported, only testing Python implementation")
@@ -314,13 +314,20 @@ class UnicodeAcoraTest(unittest.TestCase, AcoraTest):
             list(finditer(s("\\U0001F8D1\\U0001F8D2\\uF8D3"))),
             self._result([("\\U0001F8D2", 1)]))
 
-    def test_finditer_ignore_case(self):
+    def test_finditer_ignore_case_single_char(self):
         s = self._swrap
         finditer = self._build_ignore_case('a', 'b', 'c', 'd').finditer
         self.assertEqual(
             sorted(finditer(s('AaBbCcDd'))),
             self._result([('a', 0), ('a', 1), ('b', 2), ('b', 3),
                           ('c', 4), ('c', 5), ('d', 6), ('d', 7)]))
+
+    def test_finditer_ignore_case_words(self):
+        s = self._swrap
+        finditer = self._build_ignore_case('aAbb', 'bc', 'cc', 'Cd', 'ccD', 'bbb', 'cB').finditer
+        self.assertEqual(
+            sorted(finditer(s('AaBbCcDd'))),
+            self._result([('Cd', 5), ('aAbb', 0), ('bc', 3), ('cc', 4), ('ccD', 4)]))
 
     def test_finditer_ignore_case_redundant(self):
         s = self._swrap

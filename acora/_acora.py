@@ -292,8 +292,8 @@ def merge_targets(state, ignore_case):
                 if letter not in targets:
                     targets[letter] = child
                 if ignore_case:
-                    uc = child.letter.upper()
-                    if uc != child.letter:
+                    uc = letter.upper()
+                    if uc != child.letter and uc not in targets:
                         targets[uc] = child
     if matches is not None and len(matches) > 1:
         matches.sort(key=len, reverse=True)
