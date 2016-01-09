@@ -7,14 +7,14 @@ from distutils.extension import Extension
 import sys
 import os.path
 
-version = "1.9"
+version = "2.0"
 
-SOURCES = ["acora/_acora", "acora/_nfa2dfa"]
+SOURCES = ["acora/_acora", "acora/_cacora"]
 BASEDIR = os.path.dirname(__file__)
 
 extensions = [
-    Extension("acora._acora", ["acora/_acora.pyx"]),
-    Extension("acora._nfa2dfa", ["acora/_nfa2dfa.py"]),
+    Extension("acora._acora", ["acora/_acora.py"]),
+    Extension("acora._cacora", ["acora/_cacora.pyx"]),
 ]
 
 try:
@@ -38,7 +38,7 @@ except ValueError:
         import Cython
         print("Building with Cython %s" % Cython.__version__)
     else:
-        def cythonize(extensions):
+        def cythonize(extensions, **kwargs):
             for extension in extensions:
                 sources = []
                 for sfile in extension.sources:
@@ -48,7 +48,7 @@ except ValueError:
                     sources.append(sfile)
                 extension.sources[:] = sources
             return extensions
-    extensions = cythonize(extensions)
+    extensions = cythonize(extensions, annotate=True)
 else:
     extensions = []
 

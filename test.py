@@ -4,8 +4,20 @@ Simple test suite for acora.
 
 import acora
 
+DOTDEBUG = False
+
 if acora.BytesAcora is acora.PyAcora or acora.UnicodeAcora is acora.PyAcora:
     print("WARNING: '_acora' C extension not imported, only testing Python implementation")
+
+try:
+    from acora._acora import tree_to_dot
+except ImportError:
+    tree_to_dot = lambda x: None
+
+try:
+    from acora._cacora import machine_to_dot
+except ImportError:
+    machine_to_dot = lambda x: None
 
 import sys
 import unittest
@@ -73,16 +85,37 @@ class AcoraTest(object):
 
     def _build(self, *keywords):
         keywords = list(map(self._swrap, keywords))
-        return acora.AcoraBuilder(*keywords).build(acora=self.acora)
+        builder = acora.AcoraBuilder(*keywords)
+        if DOTDEBUG:
+            print('Initial tree:')
+            tree_to_dot(builder.tree)
+        machine = builder.build(acora=self.acora)
+        if DOTDEBUG:
+            print('\nProcessed tree:')
+            tree_to_dot(builder.tree)
+            if not isinstance(machine, acora.PyAcora):
+                print('\nMachine:')
+                machine_to_dot(machine)
+        return machine
 
     def _build_ignore_case(self, *keywords):
         keywords = list(map(self._swrap, keywords))
-        return acora.AcoraBuilder(*keywords).build(
-            ignore_case=True, acora=self.acora)
+        builder = acora.AcoraBuilder(*keywords, ignore_case=True)
+        if DOTDEBUG:
+            print('Initial tree:')
+            tree_to_dot(builder.tree)
+        machine = builder.build(acora=self.acora)
+        if DOTDEBUG:
+            print('\nProcessed tree:')
+            tree_to_dot(builder.tree)
+            if not isinstance(machine, acora.PyAcora):
+                print('\nMachine:')
+                machine_to_dot(machine)
+        return machine
 
     def _result(self, result):
         s = self._swrap
-        return [ (s(k), pos) for k,pos in result ]
+        return [(s(k), pos) for k,pos in result]
 
     # basic tests
 
@@ -174,7 +207,31 @@ class AcoraTest(object):
 
         builder = acora.AcoraBuilder(*list(map(s, ['a', 'b', 'c'])))
         ac1 = builder.build(acora=self.acora)
+        #if not isinstance(ac1, acora.PyAcora):
+        #    machine_to_dot(ac1)
         ac2 = pickle.loads(pickle.dumps(ac1))
+        #if not isinstance(ac2, acora.PyAcora):
+        #    machine_to_dot(ac2)
+
+        self.assertEqual(
+            sorted(ac1.finditer(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2)]))
+
+        self.assertEqual(
+            sorted(ac2.finditer(s('abcd'))),
+            self._result([('a', 0), ('b', 1), ('c', 2)]))
+
+    def test_pickle2_machine(self):
+        import pickle
+        s = self._swrap
+
+        builder = acora.AcoraBuilder(*list(map(s, ['a', 'b', 'c'])))
+        ac1 = builder.build(acora=self.acora)
+        #if not isinstance(ac1, acora.PyAcora):
+        #    machine_to_dot(ac1)
+        ac2 = pickle.loads(pickle.dumps(ac1, protocol=pickle.HIGHEST_PROTOCOL))
+        #if not isinstance(ac2, acora.PyAcora):
+        #    machine_to_dot(ac2)
 
         self.assertEqual(
             sorted(ac1.finditer(s('abcd'))),
@@ -189,6 +246,8 @@ class AcoraTest(object):
 
         builder = acora.AcoraBuilder(*list(map(s, ['a', 'bc', 'c'])))
         ac = builder.build(acora=self.acora)
+        #if not isinstance(ac, acora.PyAcora):
+        #    machine_to_dot(ac)
 
         import pickle
         p = pickle.dumps(ac)
@@ -198,6 +257,8 @@ class AcoraTest(object):
         gc.collect()
 
         ac = pickle.loads(p)
+        #if not isinstance(ac, acora.PyAcora):
+        #    machine_to_dot(ac)
         self.assertEqual(
             sorted(ac.finditer(s('abcd'))),
             self._result([('a', 0), ('bc', 1), ('c', 2)]))
