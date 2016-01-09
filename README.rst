@@ -53,6 +53,10 @@ Collect some keywords::
     >>> builder = AcoraBuilder('ab', 'bc', 'de')
     >>> builder.add('a', 'b')
 
+Or::
+
+    >>> builder.update(['a', 'b'])  # new in version 2.0
+
 Generate the Acora search engine for the current keyword set::
 
     >>> ac = builder.build()
@@ -178,6 +182,10 @@ FAQs and recipes
 
 Changelog
 ---------
+
+* 2.0 [2016-xx-yy]
+
+  - rewrite of the construction algorithm to speed it up and save memory
 
 * 1.9 [2015-10-10]
 
