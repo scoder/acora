@@ -215,8 +215,9 @@ cdef int _init_unicode_node(
             c_node.targets[i] = all_nodes + <size_t>node_offsets[child]
             c_characters[i] = child.letter
     else:
-        for i, (character, child) in enumerate(sorted(targets.items())):
-            c_node.targets[i] = all_nodes + <size_t>node_offsets[child]
+        # dict[key] is much faster than creating and sorting item tuples
+        for i, character in enumerate(sorted(targets)):
+            c_node.targets[i] = all_nodes + <size_t>node_offsets[targets[character]]
             c_characters[i] = character
 
     c_node.characters = c_characters
@@ -263,8 +264,9 @@ cdef int _init_bytes_node(
             c_node.targets[i] = all_nodes + <size_t>node_offsets[child]
             c_characters[i] = child.letter
     else:
-        for i, (character, child) in enumerate(sorted(targets.items())):
-            c_node.targets[i] = all_nodes + <size_t>node_offsets[child]
+        # dict[key] is much faster than creating and sorting item tuples
+        for i, character in enumerate(sorted(targets)):
+            c_node.targets[i] = all_nodes + <size_t>node_offsets[targets[character]]
             c_characters[i] = <Py_UCS4>character
     characters = _intern(pyrefs, characters)
 
