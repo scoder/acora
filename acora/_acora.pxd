@@ -55,6 +55,7 @@ cpdef insert_unicode_keyword(_MachineState tree, keyword, long state_id, bint ig
 cpdef build_trie(_MachineState start_state, bint ignore_case=*)
 
 
+@cython.locals(letter=object, uc=Py_UCS4, child=_MachineState)
 cpdef tuple merge_targets(_MachineState state, bint ignore_case)
 
 
