@@ -294,6 +294,7 @@ class AcoraBuilder(object):
                     type(keyword))
             self.state_counter = insert_keyword(
                 self.tree, keyword, self.state_counter, ignore_case)
+        self.keywords.update(keywords)
 
 
 ### convenience functions
