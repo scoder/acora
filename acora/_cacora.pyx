@@ -778,6 +778,12 @@ cdef class _FileAcoraIter:
             if error:
                 cpython.exc.PyErr_SetFromErrno(IOError)
         else:
+            # Why not always release the GIL and only acquire it when reading?
+            # Well, it's actually doing that.  When the search finds something,
+            # we have to acquire the GIL in order to return the result, and if
+            # it does not find anything, then we have to acquire the GIL in order
+            # to read more data.  So, wrapping the search call in a nogil section
+            # is actually enough.
             data_end = c_buffer + buffer_size
             while not found:
                 if self.c_buffer_pos >= data_end:
