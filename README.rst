@@ -1,26 +1,25 @@
 Acora
-======
+=====
 
 .. contents:: :local:
 
 What is Acora?
----------------
+--------------
 
 Acora is 'fgrep' for Python, a fast multi-keyword text search engine.
 
-Based on a set of keywords, it generates a search automaton (DFA) and
-runs it over string input, either unicode or bytes.
-
-It is based on the Aho-Corasick algorithm and an NFA-to-DFA powerset
-construction.
+Based on a set of keywords and the
+`Aho-Corasick algorithm <https://en.wikipedia.org/wiki/Aho-Corasick_algorithm>`_,
+it generates a search automaton and runs it over string input, either unicode
+or bytes.
 
 Acora comes with both a pure Python implementation and a fast binary
-module written in Cython. However, note that the current construction
+module written in Cython.  However, note that the current construction
 algorithm is not suitable for really large sets of keywords (i.e. more
 than a couple of thousand).
 
-You can find the `latest source code <https://github.com/scoder/acora>`_ on
-github.
+You can find the `latest source code <https://github.com/scoder/acora>`_
+on github.
 
 To report a bug or request new features, use the `github bug tracker
 <https://github.com/scoder/acora/issues>`_.  Please try to provide a
@@ -30,7 +29,7 @@ reproduce the problem, the easier it is to solve it.
 
 
 Features
----------
+--------
 
 * works with unicode strings and byte strings
 * about 2-3x as fast as Python's regular expression engine for most input
@@ -44,7 +43,7 @@ Features
 
 
 How do I use it?
------------------
+----------------
 
 Import the package::
 
@@ -54,6 +53,10 @@ Collect some keywords::
 
     >>> builder = AcoraBuilder('ab', 'bc', 'de')
     >>> builder.add('a', 'b')
+
+Or::
+
+    >>> builder.update(['a', 'b'])  # new in version 2.0
 
 Generate the Acora search engine for the current keyword set::
 
@@ -91,7 +94,7 @@ Acora also has direct support for parsing files (in binary mode)::
 
 
 FAQs and recipes
------------------
+----------------
 
 #) how do I run a greedy search for the longest matching keywords?
 
@@ -179,7 +182,11 @@ FAQs and recipes
 
 
 Changelog
-----------
+---------
+
+* 2.0 [2016-xx-yy]
+
+  - rewrite of the construction algorithm to speed it up and save memory
 
 * 1.9 [2015-10-10]
 
