@@ -184,7 +184,7 @@ FAQs and recipes
 Changelog
 ---------
 
-* 2.0 [2016-xx-yy]
+* 2.0 [2016-03-17]
 
   - rewrite of the construction algorithm to speed it up and save memory
 
