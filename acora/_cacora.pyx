@@ -446,7 +446,6 @@ cdef class _UnicodeAcoraIter:
     def __iter__(self):
         return self
 
-    @cython.cdivision(True)
     def __next__(self):
         cdef void* data_start = self.data_start
         cdef Py_UCS4* test_chars
@@ -466,39 +465,7 @@ cdef class _UnicodeAcoraIter:
             while data_pos < data_len:
                 current_char = PyUnicode_READ(kind, data_start, data_pos)
                 data_pos += 1
-                test_chars = current_node.characters
-                end = current_node.char_count
-                if current_char <= test_chars[0]:
-                    if current_char == test_chars[0]:
-                        current_node = current_node.targets[0]
-                    else:
-                        current_node = start_node
-                elif current_char >= test_chars[end-1]:
-                    if current_char == test_chars[end-1]:
-                        current_node = current_node.targets[end-1]
-                    else:
-                        current_node = start_node
-                else:
-                    start = 0
-                    while end - start > 8:
-                        mid = (start + end) // 2
-                        if current_char < test_chars[mid]:
-                            end = mid
-                        elif current_char == test_chars[mid]:
-                            current_node = current_node.targets[mid]
-                            break
-                        else:
-                            start = mid
-                    else:
-                        for i in range(start, end):
-                            if current_char <= test_chars[i]:
-                                if current_char == test_chars[i]:
-                                    current_node = current_node.targets[i]
-                                else:
-                                    current_node = start_node
-                                break
-                        else:
-                            current_node = start_node
+                current_node = _step_to_next_node(start_node, current_node, current_char)
                 if current_node.matches is not NULL:
                     found = 1
                     break
@@ -684,59 +651,69 @@ cdef class _BytesAcoraIter:
         return (match, <Py_ssize_t>(self.data_char - self.data_start) - len(match))
 
 
-@cython.cdivision(True)
 cdef int _search_in_bytes(_AcoraBytesNodeStruct* start_node,
                           unsigned char* data_end,
                           unsigned char** _data_char,
                           _AcoraBytesNodeStruct** _current_node) nogil:
     cdef unsigned char* data_char = _data_char[0]
     cdef _AcoraBytesNodeStruct* current_node = _current_node[0]
-    cdef unsigned char* test_chars
     cdef unsigned char current_char
-    cdef int i, found = 0, start, mid, end
+    cdef int found = 0
 
     while data_char < data_end:
         current_char = data_char[0]
         data_char += 1
-        test_chars = current_node.characters
-        end = current_node.char_count
-        if current_char <= test_chars[0]:
-            if current_char == test_chars[0]:
-                current_node = current_node.targets[0]
-            else:
-                current_node = start_node
-        elif current_char >= test_chars[end-1]:
-            if current_char == test_chars[end-1]:
-                current_node = current_node.targets[end-1]
-            else:
-                current_node = start_node
-        else:
-            start = 0
-            while end - start > 8:
-                mid = (start + end) // 2
-                if current_char < test_chars[mid]:
-                    end = mid
-                elif current_char == test_chars[mid]:
-                    current_node = current_node.targets[mid]
-                    break
-                else:
-                    start = mid
-            else:
-                for i in range(start, end):
-                    if current_char <= test_chars[i]:
-                        if current_char == test_chars[i]:
-                            current_node = current_node.targets[i]
-                        else:
-                            current_node = start_node
-                        break
-                else:
-                    current_node = start_node
+        current_node = _step_to_next_node(start_node, current_node, current_char)
         if current_node.matches is not NULL:
             found = 1
             break
     _data_char[0] = data_char
     _current_node[0] = current_node
     return found
+
+
+ctypedef fused _AcoraNodeStruct:
+    _AcoraBytesNodeStruct
+    _AcoraUnicodeNodeStruct
+
+ctypedef fused _inputCharType:
+    unsigned char
+    Py_UCS4
+
+
+@cython.cdivision(True)
+cdef inline _AcoraNodeStruct* _step_to_next_node(
+        _AcoraNodeStruct* start_node,
+        _AcoraNodeStruct* current_node,
+        _inputCharType current_char) nogil:
+
+    cdef _inputCharType* test_chars = <_inputCharType*>current_node.characters
+    cdef int i, start, mid, end
+
+    end = current_node.char_count
+    if current_char <= test_chars[0]:
+        return current_node.targets[0] if current_char == test_chars[0] else start_node
+
+    if current_char >= test_chars[end-1]:
+        return current_node.targets[end-1] if current_char == test_chars[end-1] else start_node
+
+    # bisect into larger character maps (> 8 seems to perform best for me)
+    start = 0
+    while end - start > 8:
+        mid = (start + end) // 2
+        if current_char < test_chars[mid]:
+            end = mid
+        elif current_char == test_chars[mid]:
+            return current_node.targets[mid]
+        else:
+            start = mid
+
+    # sequentially run through small character maps
+    for i in range(start, end):
+        if current_char <= test_chars[i]:
+            return current_node.targets[i] if current_char == test_chars[i] else start_node
+
+    return start_node
 
 
 # file data handling
