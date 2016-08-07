@@ -79,6 +79,8 @@ class _MachineState(object):
 def build_MachineState(state_id, matches=None):
     state = _MachineState.__new__(_MachineState)
     state.id = state_id
+    state.letter = None
+    state.children = None
     state.matches = [] if matches is None else matches
     return state
 
