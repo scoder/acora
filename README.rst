@@ -96,89 +96,94 @@ Acora also has direct support for parsing files (in binary mode)::
 FAQs and recipes
 ----------------
 
-#) how do I run a greedy search for the longest matching keywords?
+#) How do I run a greedy search for the longest matching keywords?
 
-    >>> builder = AcoraBuilder('a', 'ab', 'abc')
-    >>> ac = builder.build()
+   ::
 
-    >>> for kw, pos in ac.finditer('abbabc'):
-    ...     print(kw)
-    a
-    ab
-    a
-    ab
-    abc
+       >>> builder = AcoraBuilder('a', 'ab', 'abc')
+       >>> ac = builder.build()
 
-    >>> from itertools import groupby
-    >>> from operator import itemgetter
+       >>> for kw, pos in ac.finditer('abbabc'):
+       ...     print(kw)
+       a
+       ab
+       a
+       ab
+       abc
 
-    >>> def longest_match(matches):
-    ...     for pos, match_set in groupby(matches, itemgetter(1)):
-    ...         yield max(match_set)
+       >>> from itertools import groupby
+       >>> from operator import itemgetter
 
-    >>> for kw, pos in longest_match(ac.finditer('abbabc')):
-    ...     print(kw)
-    ab
-    abc
+       >>> def longest_match(matches):
+       ...     for pos, match_set in groupby(matches, itemgetter(1)):
+       ...         yield max(match_set)
 
-#) how do I parse line-by-line with arbitrary line endings?
+       >>> for kw, pos in longest_match(ac.finditer('abbabc')):
+       ...     print(kw)
+       ab
+       abc
 
-    >>> def group_by_lines(s, *keywords):
-    ...     builder = AcoraBuilder('\r', '\n', *keywords)
-    ...     ac = builder.build()
-    ...
-    ...     current_line_matches = []
-    ...     last_ending = None
-    ...
-    ...     for kw, pos in ac.finditer(s):
-    ...         if kw in '\r\n':
-    ...             if last_ending == '\r' and kw == '\n':
-    ...                 continue # combined CRLF
-    ...             yield tuple(current_line_matches)
-    ...             del current_line_matches[:]
-    ...             last_ending = kw
-    ...         else:
-    ...             last_ending = None
-    ...             current_line_matches.append(kw)
-    ...     yield tuple(current_line_matches)
+   Note that this recipe assumes search terms that do not have inner
+   overlaps apart from their prefix.
 
-    >>> kwds = ['ab', 'bc', 'de']
-    >>> for matches in group_by_lines('a\r\r\nbc\r\ndede\n\nab', *kwds):
-    ...     print(matches)
-    ()
-    ()
-    ('bc',)
-    ('de', 'de')
-    ()
-    ('ab',)
+#) How do I parse line-by-line with arbitrary line endings?
+
+       >>> def group_by_lines(s, *keywords):
+       ...     builder = AcoraBuilder('\r', '\n', *keywords)
+       ...     ac = builder.build()
+       ...
+       ...     current_line_matches = []
+       ...     last_ending = None
+       ...
+       ...     for kw, pos in ac.finditer(s):
+       ...         if kw in '\r\n':
+       ...             if last_ending == '\r' and kw == '\n':
+       ...                 continue # combined CRLF
+       ...             yield tuple(current_line_matches)
+       ...             del current_line_matches[:]
+       ...             last_ending = kw
+       ...         else:
+       ...             last_ending = None
+       ...             current_line_matches.append(kw)
+       ...     yield tuple(current_line_matches)
+
+       >>> kwds = ['ab', 'bc', 'de']
+       >>> for matches in group_by_lines('a\r\r\nbc\r\ndede\n\nab', *kwds):
+       ...     print(matches)
+       ()
+       ()
+       ('bc',)
+       ('de', 'de')
+       ()
+       ('ab',)
 
 
-#) how do I find whole lines that contain keywords, as fgrep does?
+#) How do I find whole lines that contain keywords, as fgrep does?
 
-    >>> def match_lines(s, *keywords):
-    ...     builder = AcoraBuilder('\r', '\n', *keywords)
-    ...     ac = builder.build()
-    ...
-    ...     line_start = 0
-    ...     matches = False
-    ...     for kw, pos in ac.finditer(s):
-    ...         if kw in '\r\n':
-    ...             if matches:
-    ...                  yield s[line_start:pos]
-    ...                  matches = False
-    ...             line_start = pos + 1
-    ...         else:
-    ...             matches = True
-    ...     if matches:
-    ...         yield s[line_start:]
+       >>> def match_lines(s, *keywords):
+       ...     builder = AcoraBuilder('\r', '\n', *keywords)
+       ...     ac = builder.build()
+       ...
+       ...     line_start = 0
+       ...     matches = False
+       ...     for kw, pos in ac.finditer(s):
+       ...         if kw in '\r\n':
+       ...             if matches:
+       ...                  yield s[line_start:pos]
+       ...                  matches = False
+       ...             line_start = pos + 1
+       ...         else:
+       ...             matches = True
+       ...     if matches:
+       ...         yield s[line_start:]
 
-    >>> kwds = ['x', 'de', '\nstart']
-    >>> text = 'a line with\r\r\nsome text\r\ndede\n\nab\n start 1\nstart\n'
-    >>> for line in match_lines(text, *kwds):
-    ...     print(line)
-    some text
-    dede
-    start
+       >>> kwds = ['x', 'de', '\nstart']
+       >>> text = 'a line with\r\r\nsome text\r\ndede\n\nab\n start 1\nstart\n'
+       >>> for line in match_lines(text, *kwds):
+       ...     print(line)
+       some text
+       dede
+       start
 
 
 Changelog
