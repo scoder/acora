@@ -1,5 +1,5 @@
 exclude *.py *.txt
 include setup.py bench.py test.py
-include MANIFEST.in LICENSE.txt README.rst
+include MANIFEST.in LICENSE.txt README.rst Makefile
 include testall.sh
 recursive-include acora *.py *.pyx *.pxd *.c *.h
