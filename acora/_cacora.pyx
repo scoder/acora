@@ -460,6 +460,8 @@ cdef class _UnicodeAcoraIter:
         cdef _AcoraUnicodeNodeStruct* start_node = self.start_node
         cdef _AcoraUnicodeNodeStruct* current_node = self.current_node
 
+        if self.start_node.char_count == 0:
+            raise StopIteration  # Handle empty automaton gracefully
         if current_node.matches is not NULL:
             if current_node.matches[self.match_index] is not NULL:
                 return self._build_next_match()
@@ -647,6 +649,8 @@ cdef class _BytesAcoraIter:
         cdef unsigned char* test_chars
         cdef unsigned char current_char
         cdef int i, found = 0
+        if self.start_node.char_count == 0:
+            raise StopIteration  # Handle empty automaton gracefully
         if self.current_node.matches is not NULL:
             if self.current_node.matches[self.match_index] is not NULL:
                 return self._build_next_match()
@@ -777,6 +781,8 @@ cdef class _FileAcoraIter:
         cdef unsigned char* data_end
         cdef int error = 0, found = 0
         cdef Py_ssize_t buffer_size, bytes_read = 0
+        if self.start_node.char_count == 0:
+            raise StopIteration  # Handle empty automaton gracefully
         if self.c_buffer_pos is NULL:
             raise StopIteration
         if self.current_node.matches is not NULL:
