@@ -4,7 +4,7 @@ Simple test suite for acora.
 
 import acora
 
-DOTDEBUG = True  # False
+DOTDEBUG = False  # False
 
 if acora.BytesAcora is acora.PyAcora or acora.UnicodeAcora is acora.PyAcora:
     print("WARNING: '_acora' C extension not imported, only testing Python implementation")
@@ -118,6 +118,13 @@ class AcoraTest(object):
         return [(s(k), pos) for k,pos in result]
 
     # basic tests
+
+    def test_finditer_empty(self):
+        s = self._swrap
+        finditer = self._build().finditer
+        self.assertEqual(
+            sorted(finditer(s('abcd'))),
+            self._result([]))
 
     def test_finditer_single_keyword(self):
         s = self._swrap
@@ -364,6 +371,11 @@ class BytesAcoraTest(unittest.TestCase, AcoraTest):
             return list(ac.filefind(tmp))
         finally:
             tmp.close()
+
+    def test_filefind_empty(self):
+        filefind= self._build().filefind
+        data = BytesIO(self.search_string)
+        self.assertEqual(list(filefind(data)), [])
 
     def test_large_filelike_searching(self):
         filefind = self._build('SADHFCAL'.encode('ASCII'),

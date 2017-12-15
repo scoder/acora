@@ -385,6 +385,8 @@ cdef class UnicodeAcora:
 
         Returns (keyword, offset) pairs.
         """
+        if self.start_node.char_count == 0:
+            return iter(())
         return _UnicodeAcoraIter(self, data)
 
     def findall(self, unicode data):
@@ -442,6 +444,9 @@ cdef class _UnicodeAcoraIter:
             self.data_start = PyUnicode_AS_UNICODE(data)
             self.data_len = PyUnicode_GET_SIZE(data)
             self.unicode_kind = PyUnicode_WCHAR_KIND
+
+        if not acora.start_node.char_count:
+            raise ValueError("Non-empty engine required")
 
     def __iter__(self):
         return self
@@ -576,6 +581,8 @@ cdef class BytesAcora:
 
         Returns (keyword, offset) pairs.
         """
+        if self.start_node.char_count == 0:
+            return iter(())
         return _BytesAcoraIter(self, data)
 
     def findall(self, bytes data):
@@ -593,6 +600,8 @@ cdef class BytesAcora:
 
         Returns (keyword, offset) pairs.
         """
+        if self.start_node.char_count == 0:
+            return iter(())
         close_file = False
         if not hasattr(f, 'read'):
             f = open(f, 'rb')
@@ -618,12 +627,16 @@ cdef class _BytesAcoraIter:
     cdef unsigned char* data_start
 
     def __cinit__(self, BytesAcora acora not None, bytes data):
-        assert acora.start_node is not NULL and acora.start_node.matches is NULL
+        assert acora.start_node is not NULL
+        assert acora.start_node.matches is NULL
         self.acora = acora
         self.start_node = self.current_node = acora.start_node
         self.match_index = 0
         self.data_char = self.data_start = self.data = data
         self.data_end = self.data_char + len(data)
+
+        if not acora.start_node.char_count:
+            raise ValueError("Non-empty engine required")
 
     def __iter__(self):
         return self
@@ -731,7 +744,8 @@ cdef class _FileAcoraIter:
     cdef BytesAcora acora
 
     def __cinit__(self, BytesAcora acora not None, f, bint close=False, Py_ssize_t buffer_size=FILE_BUFFER_SIZE):
-        assert acora.start_node is not NULL and acora.start_node.matches is NULL
+        assert acora.start_node is not NULL
+        assert acora.start_node.matches is NULL
         self.acora = acora
         self.start_node = self.current_node = acora.start_node
         self.match_index = 0
@@ -750,6 +764,9 @@ cdef class _FileAcoraIter:
             # use a statically allocated, fixed-size C buffer
             self.buffer = b'\0' * buffer_size
         self.c_buffer_pos = self.c_buffer_end = <unsigned char*> self.buffer
+
+        if not acora.start_node.char_count:
+            raise ValueError("Non-empty engine required")
 
     def __iter__(self):
         return self
