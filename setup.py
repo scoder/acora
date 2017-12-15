@@ -62,11 +62,8 @@ if 'setuptools' in sys.modules:
 
 
 def read_readme():
-    f = open(os.path.join(os.path.dirname(__file__), 'README.rst'))
-    try:
+    with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
         return f.read()
-    finally:
-        f.close()
 
 
 setup(
