@@ -189,6 +189,10 @@ FAQs and recipes
 Changelog
 ---------
 
+* 2.1 [2017-12-15]
+
+  - fix handling of empty engines (Github issue #18)
+
 * 2.0 [2016-03-17]
 
   - rewrite of the construction algorithm to speed it up and save memory
