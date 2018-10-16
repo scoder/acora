@@ -48,7 +48,7 @@ except ValueError:
                     sources.append(sfile)
                 extension.sources[:] = sources
             return extensions
-    extensions = cythonize(extensions, annotate=True)
+    extensions = cythonize(extensions, annotate=True, language_level=3)
 else:
     extensions = []
 
