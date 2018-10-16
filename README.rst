@@ -189,6 +189,10 @@ FAQs and recipes
 Changelog
 ---------
 
+* 2.2 [2018-08-16]
+
+  - Update to work with CPython 3.7 by building with Cython 0.29.
+
 * 2.1 [2017-12-15]
 
   - fix handling of empty engines (Github issue #18)
