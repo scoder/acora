@@ -16,7 +16,7 @@ test:
 
 clean:
 	${PYTHON} setup.py clean
-	rm -f $(PROJECT)/*.{so,pyd,pyc,pyo}
+	rm -f $(wildcard $(addprefix $(PROJECT)/*., so pyd pyc pyo))
 	[ -z "$(WITH_CYTHON)" ] || rm -f $(PROJECT)/*.c
 
 sdist: dist/$(PROJECT)-$(VERSION).tar.gz
