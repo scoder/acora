@@ -1,6 +1,7 @@
 PYTHON?=python
 PROJECT=acora
 VERSION?=$(shell sed -ne 's|^version\s*=\s*"\([^"]*\)".*|\1|p' setup.py)
+WITH_CYTHON=$(shell $(PYTHON) -c 'from Cython.Build import cythonize' && echo " --with-cython" || true)
 
 MANYLINUX_IMAGE_X86_64=quay.io/pypa/manylinux1_x86_64
 MANYLINUX_IMAGE_686=quay.io/pypa/manylinux1_i686
@@ -8,7 +9,15 @@ MANYLINUX_IMAGE_686=quay.io/pypa/manylinux1_i686
 all:    local
 
 local:
-	${PYTHON} setup.py build_ext --inplace
+	$(PYTHON) setup.py build_ext --inplace  $(WITH_CYTHON)
+
+test:
+	$(PYTHON) test.py -v
+
+clean:
+	${PYTHON} setup.py clean
+	rm -f $(PROJECT)/*.{so,pyd,pyc,pyo}
+	[ -z "$(WITH_CYTHON)" ] || rm -f $(PROJECT)/*.c
 
 sdist: dist/$(PROJECT)-$(VERSION).tar.gz
 
