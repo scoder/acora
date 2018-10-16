@@ -128,6 +128,8 @@ FAQs and recipes
 
 #) How do I parse line-by-line with arbitrary line endings?
 
+   ::
+
        >>> def group_by_lines(s, *keywords):
        ...     builder = AcoraBuilder('\r', '\n', *keywords)
        ...     ac = builder.build()
@@ -159,6 +161,8 @@ FAQs and recipes
 
 
 #) How do I find whole lines that contain keywords, as fgrep does?
+
+   ::
 
        >>> def match_lines(s, *keywords):
        ...     builder = AcoraBuilder('\r', '\n', *keywords)
