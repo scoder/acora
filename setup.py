@@ -57,7 +57,7 @@ extra_options = {}
 if 'setuptools' in sys.modules:
     extra_options['zip_safe'] = False
     extra_options['extras_require'] = {
-        'source': 'Cython>=0.27.3',
+        'source': 'Cython>=0.29',
     }
 
 
@@ -88,11 +88,10 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Operating System :: OS Independent',
         'Topic :: Text Processing',
     ],

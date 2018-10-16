@@ -42,8 +42,8 @@ class _MachineState(object):
     """Trie node state for the automaton.
     """
     def __init__(self):
-        self.id = None
-        self.letter = None
+        self.id = 0
+        self.letter = u'\0'
         self.children = None
         self.matches = None
         self.fail = None
