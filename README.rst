@@ -195,7 +195,7 @@ Changelog
 
 * 2.3 [2021-03-27]
 
-  - Update to work with CPython 3.7 by building with Cython 0.29.22.
+  - Update to work with CPython 3.9 by building with Cython 0.29.22.
 
 * 2.2 [2018-08-16]
 
