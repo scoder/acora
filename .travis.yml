@@ -7,9 +7,11 @@ python:
   - 3.5
   - 3.6
   - 3.7
+  - 3.8
+  - 3.9
 
 install:
-  - pip install Cython==0.29
+  - pip install Cython==0.29.22
   - python setup.py build_ext --inplace
 
 script:

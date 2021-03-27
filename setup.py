@@ -7,7 +7,7 @@ from distutils.extension import Extension
 import sys
 import os.path
 
-version = "2.2"
+version = "2.3"
 
 SOURCES = ["acora/_acora", "acora/_cacora"]
 BASEDIR = os.path.dirname(__file__)
@@ -92,6 +92,8 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Operating System :: OS Independent',
         'Topic :: Text Processing',
     ],
