@@ -1,0 +1,213 @@
+name: Build & Publish wheel
+
+on:
+  push:
+  create:
+
+jobs:
+  sdist:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install Dependency
+      run: |
+        python -m pip install -U pip setuptools && python -m pip install -r requirements.txt
+
+    - name: Build sdist
+      run: make sdist
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/*.tar.gz
+
+    - name: Archive sdist
+      uses: actions/upload-artifact@v3
+      with:
+        name: sdist
+        path: dist/*.tar.gz
+        if-no-files-found: ignore
+
+  Tests:
+    strategy:
+      # Allows for matrix sub-jobs to fail without canceling the rest
+      fail-fast: false
+
+      matrix:
+        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
+
+        include:
+          - python-version: "3.12-dev"
+            allowed_failure: true
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      if: startsWith(matrix.python-version, '3.')
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Python2 (Linux)
+      if: matrix.python-version == '2.7' && startsWith(matrix.os, 'ubuntu')
+      run: |
+          sudo ln -fs python2 /usr/bin/python
+          sudo apt-get update
+          sudo apt-get install python-setuptools python2-dev
+          curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+          sudo python2 get-pip.py
+          ls -l /usr/bin/pip* /usr/local/bin/pip*
+          which pip
+
+    - name: Install Dependency
+      run: |
+        python -m pip install -U pip setuptools && python -m pip install -r requirements.txt
+
+    - name: Build
+      continue-on-error: ${{ matrix.allowed_failure || false }}
+      run: make local
+
+    - name: Run slow tests
+      continue-on-error: ${{ matrix.allowed_failure || false }}
+      run: make testslow
+
+  Linux:
+
+    strategy:
+      # Allows for matrix sub-jobs to fail without canceling the rest
+      fail-fast: false
+
+      matrix:
+        image:
+          - manylinux1_x86_64
+          - manylinux1_i686
+          - manylinux_2_24_i686
+          - manylinux_2_24_x86_64
+          - manylinux_2_28_x86_64
+          - manylinux_2_28_aarch64
+          - musllinux_1_1_x86_64
+        pyversion: ["cp*"]
+
+        include:
+          - image: manylinux_2_24_aarch64
+            pyversion: "cp37*"
+          - image: manylinux_2_24_aarch64
+            pyversion: "cp38*"
+          - image: manylinux_2_24_aarch64
+            pyversion: "cp39*"
+          - image: manylinux_2_24_aarch64
+            pyversion: "cp310*"
+          - image: manylinux_2_24_aarch64
+            pyversion: "cp311*"
+          - image: manylinux_2_28_aarch64
+            pyversion: "cp312*"
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install Dependency
+      run: |
+        python -m pip install -U pip setuptools && python -m pip install --pre -r requirements.txt
+
+    - name: Building wheel
+      run: |
+        make PYTHON_WHEEL_BUILD_VERSION="${{ matrix.pyversion }}" sdist wheel_${{ matrix.image }}
+
+    - name: Copy wheels in dist
+      run: cp -v wheelhouse*/*-m*linux*.whl dist/  # manylinux / musllinux
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/*.whl
+
+    - name: Archive Wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels-${{ matrix.image }}
+        path: dist/*.whl
+        if-no-files-found: ignore
+
+  non-Linux:
+    strategy:
+      # Allows for matrix sub-jobs to fail without canceling the rest
+      fail-fast: false
+
+      matrix:
+        #os: [macos-10.15, windows-latest]
+        #os: [macos-10.15, macOS-M1]
+        os: [macos-11.0, windows-latest]
+        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
+
+        include:
+          - python-version: "3.12-dev"
+            allowed_failure: true
+        exclude:
+          - python-version: "2.7"
+            os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+    env: { MACOSX_DEPLOYMENT_TARGET: 11.0 }
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      if: startsWith(matrix.python-version, '3.')
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Python2 (Linux)
+      if: matrix.python-version == '2.7' && startsWith(matrix.os, 'ubuntu')
+      run: |
+          sudo ln -fs python2 /usr/bin/python
+          sudo apt-get update
+          sudo apt-get install python-setuptools python2-dev
+          curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+          sudo python2 get-pip.py
+          ls -l /usr/bin/pip* /usr/local/bin/pip*
+          which pip
+
+    - name: Install dependencies
+      run: |
+        python -m pip install -U pip setuptools wheel
+        python -m pip install --pre -r requirements.txt
+
+    - name: Build wheels
+      run: make sdist wheel
+
+    - name: Run slow tests
+      run: make testslow
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/*.whl
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels-${{ matrix.os }}
+        path: dist/*.whl
+        if-no-files-found: ignore

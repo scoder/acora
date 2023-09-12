@@ -2,9 +2,17 @@ PYTHON?=python
 PROJECT=acora
 VERSION?=$(shell sed -ne 's|^version\s*=\s*"\([^"]*\)".*|\1|p' setup.py)
 WITH_CYTHON=$(shell $(PYTHON) -c 'from Cython.Build import cythonize' && echo " --with-cython" || true)
+PYTHON_WHEEL_BUILD_VERSION := "cp*"
 
-MANYLINUX_IMAGE_X86_64=quay.io/pypa/manylinux1_x86_64
-MANYLINUX_IMAGE_686=quay.io/pypa/manylinux1_i686
+MANYLINUX_IMAGES= \
+    manylinux1_x86_64 \
+    manylinux1_i686 \
+    manylinux_2_24_x86_64 \
+    manylinux_2_24_i686 \
+    manylinux_2_24_aarch64 \
+    manylinux_2_28_x86_64 \
+    manylinux_2_28_aarch64 \
+    musllinux_1_1_x86_64
 
 all:    local
 
@@ -24,18 +32,24 @@ sdist: dist/$(PROJECT)-$(VERSION).tar.gz
 dist/$(PROJECT)-$(VERSION).tar.gz:
 	${PYTHON} setup.py sdist
 
-wheel_manylinux: wheel_manylinux64 wheel_manylinux32
+qemu-user-static:
+	docker run --rm --privileged hypriot/qemu-register
 
-wheel_manylinux32 wheel_manylinux64: dist/$(PROJECT)-$(VERSION).tar.gz
+wheel:
+	$(PYTHON) setup.py bdist_wheel
+
+wheel_manylinux: sdist $(addprefix wheel_,$(MANYLINUX_IMAGES))
+$(addprefix wheel_,$(filter-out %_x86_64, $(filter-out %_i686, $(MANYLINUX_IMAGES)))): qemu-user-static
+
+wheel_%: dist/$(PROJECT)-$(VERSION).tar.gz
 	@echo "Building wheels for $(PROJECT) $(VERSION)"
-	mkdir -p wheelhouse_$(subst wheel_,,$@)
 	time docker run --rm -t \
 		-v $(shell pwd):/io \
 		-e CFLAGS="-O3 -g0 -mtune=generic -pipe -fPIC" \
 		-e LDFLAGS="$(LDFLAGS) -fPIC" \
-		-e WHEELHOUSE=wheelhouse_$(subst wheel_,,$@) \
-		$(if $(patsubst %32,,$@),$(MANYLINUX_IMAGE_X86_64),$(MANYLINUX_IMAGE_686)) \
-		bash -c 'for PYBIN in /opt/python/*/bin; do \
+		-e WHEELHOUSE=wheelhouse$(subst wheel_manylinux,,$@) \
+		quay.io/pypa/$(subst wheel_,,$@) \
+		bash -c 'for PYBIN in /opt/python/$(PYTHON_WHEEL_BUILD_VERSION)/bin; do \
 		    $$PYBIN/python -V; \
 		    { $$PYBIN/pip wheel -w /io/$$WHEELHOUSE /io/$< & } ; \
 		    done; wait; \

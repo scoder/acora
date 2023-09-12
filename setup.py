@@ -1,7 +1,4 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
 from distutils.extension import Extension
 
 import sys
@@ -53,14 +50,6 @@ else:
     extensions = []
 
 
-extra_options = {}
-if 'setuptools' in sys.modules:
-    extra_options['zip_safe'] = False
-    extra_options['extras_require'] = {
-        'source': 'Cython>=0.29',
-    }
-
-
 def read_readme():
     with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
         return f.read()
@@ -85,15 +74,16 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Cython',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Operating System :: OS Independent',
         'Topic :: Text Processing',
     ],
@@ -102,5 +92,7 @@ setup(
 
     ext_modules=extensions,
     packages=['acora'],
-    **extra_options
+    extras_require={
+        'source': 'Cython>=0.29',
+    },
 )
