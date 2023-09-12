@@ -78,9 +78,9 @@ jobs:
       continue-on-error: ${{ matrix.allowed_failure || false }}
       run: make local
 
-    - name: Run slow tests
+    - name: Run tests
       continue-on-error: ${{ matrix.allowed_failure || false }}
-      run: make testslow
+      run: make test
 
   Linux:
 
@@ -196,8 +196,8 @@ jobs:
     - name: Build wheels
       run: make sdist wheel
 
-    - name: Run slow tests
-      run: make testslow
+    - name: Run tests
+      run: make test
 
     - name: Release
       uses: softprops/action-gh-release@v1
