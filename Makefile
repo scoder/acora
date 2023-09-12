@@ -1,6 +1,6 @@
 PYTHON?=python
 PROJECT=acora
-VERSION?=$(shell sed -ne 's|^version\s*=\s*"\([^"]*\)".*|\1|p' setup.py)
+VERSION?=$(shell sed -ne 's|^version\s*=\s*"\([^"]*\)".*|\1|p' acora/__init__.py)
 WITH_CYTHON=$(shell $(PYTHON) -c 'from Cython.Build import cythonize' && echo " --with-cython" || true)
 PYTHON_WHEEL_BUILD_VERSION := "cp*"
 
