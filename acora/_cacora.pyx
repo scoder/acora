@@ -30,7 +30,6 @@ cdef extern from "acora_defs.h":
     cdef Py_ssize_t PyUnicode_GET_LENGTH(object u)
     cdef int PyUnicode_KIND(object u)
     cdef void* PyUnicode_DATA(object u)
-    cdef int PyUnicode_WCHAR_KIND
     cdef Py_UCS4 PyUnicode_READ(int kind, void* data, Py_ssize_t index) nogil
 
 
@@ -443,7 +442,7 @@ cdef class _UnicodeAcoraIter:
             # pre-/non-PEP393 Unicode string
             self.data_start = PyUnicode_AS_UNICODE(data)
             self.data_len = PyUnicode_GET_SIZE(data)
-            self.unicode_kind = PyUnicode_WCHAR_KIND
+            self.unicode_kind = 0
 
         if not acora.start_node.char_count:
             raise ValueError("Non-empty engine required")
@@ -698,7 +697,7 @@ ctypedef fused _inputCharType:
 cdef inline _AcoraNodeStruct* _step_to_next_node(
         _AcoraNodeStruct* start_node,
         _AcoraNodeStruct* current_node,
-        _inputCharType current_char) nogil:
+        _inputCharType current_char) noexcept nogil:
 
     cdef _inputCharType* test_chars = <_inputCharType*>current_node.characters
     cdef int i, start, mid, end
