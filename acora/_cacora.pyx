@@ -26,9 +26,12 @@ cdef extern from * nogil:
 
 cdef extern from *:
     """
-    #if PY_VERSION_HEX >= 0x030C0000 && !defined(PyUnicode_IS_READY)
+    #if PY_VERSION_HEX >= 0x030C0000
+      #undef PyUnicode_IS_READY
       #define PyUnicode_IS_READY(op)    (1)
+      #undef PyUnicode_AS_UNICODE
       #define PyUnicode_AS_UNICODE(u)   (NULL)
+      #undef PyUnicode_GET_SIZE
       #define PyUnicode_GET_SIZE(u)     (0)
 
     #elif PY_VERSION_HEX <= 0x03030000 && !(defined(CYTHON_PEP393_ENABLED) && CYTHON_PEP393_ENABLED)
