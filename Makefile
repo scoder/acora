@@ -1,6 +1,6 @@
 PYTHON?=python
 PROJECT=acora
-VERSION?=$(shell sed -ne 's|^version\s*=\s*"\([^"]*\)".*|\1|p' acora/__init__.py)
+VERSION?=$(shell sed -ne 's|^__version__\s*=\s*"\([^"]*\)".*|\1|p' acora/__init__.py)
 WITH_CYTHON=$(shell $(PYTHON) -c 'from Cython.Build import cythonize' && echo " --with-cython" || true)
 PYTHON_WHEEL_BUILD_VERSION := "cp*"
 
@@ -51,6 +51,6 @@ wheel_%: dist/$(PROJECT)-$(VERSION).tar.gz
 		quay.io/pypa/$(subst wheel_,,$@) \
 		bash -c 'for PYBIN in /opt/python/$(PYTHON_WHEEL_BUILD_VERSION)/bin; do \
 		    $$PYBIN/python -V; \
-		    { $$PYBIN/pip wheel -w /io/$$WHEELHOUSE /io/$< & } ; \
+		    { $$PYBIN/python -m pip wheel -w /io/$$WHEELHOUSE /io/$< & } ; \
 		    done; wait; \
 		    for whl in /io/$$WHEELHOUSE/$(PROJECT)-$(VERSION)-*-linux_*.whl; do auditwheel repair $$whl -w /io/$$WHEELHOUSE; done'
