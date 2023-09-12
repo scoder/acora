@@ -4,8 +4,6 @@ from distutils.extension import Extension
 import sys
 import os.path
 
-version = "2.3"
-
 SOURCES = ["acora/_acora", "acora/_cacora"]
 BASEDIR = os.path.dirname(__file__)
 
@@ -55,9 +53,24 @@ def read_readme():
         return f.read()
 
 
+def parse_version():
+    import re
+    version = None
+
+    with open(os.path.join(os.path.dirname(__file__), 'acora', '__init__.py')) as f:
+        for line in f:
+            if line.lstrip().startswith("__version__"):
+                version = re.search(r'"([0-9a-z.]+)"', line).group(1)
+                break
+
+    if not version:
+        raise RuntimeError("Failed to parse version from acora/__init__.py")
+    return version
+
+
 setup(
     name="acora",
-    version=version,
+    version=parse_version(),
     author="Stefan Behnel",
     author_email="stefan_ml@behnel.de",
     maintainer="Stefan Behnel",

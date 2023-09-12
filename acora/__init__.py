@@ -32,6 +32,8 @@ if IS_PY3:
 
 FILE_BUFFER_SIZE = 32 * 1024
 
+__version__ = "2.4"
+
 
 class PyAcora(object):
     """A simple (and very slow) Python implementation of the Acora
