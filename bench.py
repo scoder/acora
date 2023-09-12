@@ -13,15 +13,6 @@ from time import time
 from itertools import combinations
 from functools import partial
 
-try:
-    from pyximport.pyxbuild import pyx_to_dll
-except ImportError:
-    pass
-else:
-    so_path = pyx_to_dll('acora/_acora.pyx')
-    import os.path
-    sys.path.insert(0, os.path.dirname(so_path))
-
 from acora import AcoraBuilder, BytesAcora, UnicodeAcora, PyAcora
 
 
