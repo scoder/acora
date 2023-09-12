@@ -65,6 +65,8 @@ def parse_version():
 
     if not version:
         raise RuntimeError("Failed to parse version from acora/__init__.py")
+
+    print("Building acora %s" % version)
     return version
 
 
