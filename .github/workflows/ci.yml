@@ -163,48 +163,27 @@ jobs:
         #os: [macos-10.15, windows-latest]
         #os: [macos-10.15, macOS-M1]
         os: [macos-12, windows-latest]
-        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev"]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev"]
 
         #include:
         #  - python-version: "3.13-dev"
         #    allowed_failure: true
-        exclude:
-          - python-version: "2.7"
-            os: windows-latest
 
     runs-on: ${{ matrix.os }}
-    env: { MACOSX_DEPLOYMENT_TARGET: 12.0 }
+    env: { MACOSX_DEPLOYMENT_TARGET: "12.0" }
 
     steps:
     - uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
-      if: startsWith(matrix.python-version, '3.')
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Set up Python2 (Linux)
-      if: matrix.python-version == '2.7' && startsWith(matrix.os, 'ubuntu')
-      run: |
-          sudo ln -fs python2 /usr/bin/python
-          sudo apt-get update
-          sudo apt-get install python-setuptools python2-dev
-          curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-          sudo python2 get-pip.py
-          ls -l /usr/bin/pip* /usr/local/bin/pip*
-          which pip
-
-    - name: Install dependencies (Py3.x)
-      if: startswith(matrix.python-version, '3.')
+    - name: Install dependencies
       run: |
         python -m pip install -U pip setuptools wheel
-        python -m pip install --pre -r requirements.txt
-
-    - name: Install dependencies (Py2.x)
-      if: startswith(matrix.python-version, '2.')
-      run: |
-        python -m pip install -U "pip<21" "setuptools<45" "wheel<38" "Cython>=3.0.11"
+        python -m pip install -r requirements.txt
 
     - name: Build wheels
       run: make sdist wheel
