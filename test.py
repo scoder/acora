@@ -180,7 +180,7 @@ class AcoraTest(object):
         builder1 = acora.AcoraBuilder(*list(map(s, ['a', 'b', 'c'])))
         builder2 = deepcopy(builder1)
         builder2.add(s('ab'), s('bc'))
-        
+
         finditer1 = builder1.build(acora=self.acora).finditer
         finditer2 = builder2.build(acora=self.acora).finditer
 
@@ -440,10 +440,10 @@ class PyBytesAcoraTest(BytesAcoraTest):
 def suite():
     import doctest
     tests = unittest.TestSuite([
-        unittest.makeSuite(UnicodeAcoraTest),
-        unittest.makeSuite(PyUnicodeAcoraTest),
-        unittest.makeSuite(BytesAcoraTest),
-        unittest.makeSuite(PyBytesAcoraTest),
+        unittest.defaultTestLoader.loadTestsFromTestCase(UnicodeAcoraTest),
+        unittest.defaultTestLoader.loadTestsFromTestCase(PyUnicodeAcoraTest),
+        unittest.defaultTestLoader.loadTestsFromTestCase(BytesAcoraTest),
+        unittest.defaultTestLoader.loadTestsFromTestCase(PyBytesAcoraTest),
         doctest.DocTestSuite(),
         doctest.DocFileSuite('README.rst'),
     ])

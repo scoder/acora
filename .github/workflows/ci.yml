@@ -42,11 +42,11 @@ jobs:
       fail-fast: false
 
       matrix:
-        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
+        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev"]
 
-        include:
-          - python-version: "3.12-dev"
-            allowed_failure: true
+        #include:
+        #  - python-version: "3.13-dev"
+        #    allowed_failure: true
 
     runs-on: ubuntu-20.04
 
@@ -111,6 +111,8 @@ jobs:
             pyversion: "cp311*"
           - image: manylinux_2_28_aarch64
             pyversion: "cp312*"
+          - image: manylinux_2_28_aarch64
+            pyversion: "cp313*"
 
     runs-on: ubuntu-latest
 
@@ -155,17 +157,17 @@ jobs:
         #os: [macos-10.15, windows-latest]
         #os: [macos-10.15, macOS-M1]
         os: [macos-11.0, windows-latest]
-        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12-dev"]
+        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev"]
 
-        include:
-          - python-version: "3.12-dev"
-            allowed_failure: true
+        #include:
+        #  - python-version: "3.13-dev"
+        #    allowed_failure: true
         exclude:
           - python-version: "2.7"
             os: windows-latest
 
     runs-on: ${{ matrix.os }}
-    env: { MACOSX_DEPLOYMENT_TARGET: 11.0 }
+    env: { MACOSX_DEPLOYMENT_TARGET: 12.0 }
 
     steps:
     - uses: actions/checkout@v3

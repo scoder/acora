@@ -99,6 +99,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Operating System :: OS Independent',
         'Topic :: Text Processing',
     ],
@@ -108,6 +109,6 @@ setup(
     ext_modules=extensions,
     packages=['acora'],
     extras_require={
-        'source': 'Cython>=0.29',
+        'source': 'Cython>=3.0.11',
     },
 )
