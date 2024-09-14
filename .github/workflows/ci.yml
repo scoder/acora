@@ -162,7 +162,7 @@ jobs:
       matrix:
         #os: [macos-10.15, windows-latest]
         #os: [macos-10.15, macOS-M1]
-        os: [macos-12.0, windows-latest]
+        os: [macos-12, windows-latest]
         python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev"]
 
         #include:
@@ -195,10 +195,16 @@ jobs:
           ls -l /usr/bin/pip* /usr/local/bin/pip*
           which pip
 
-    - name: Install dependencies
+    - name: Install dependencies (Py3.x)
+      if: startswith(matrix.python-version, '3.')
       run: |
         python -m pip install -U pip setuptools wheel
         python -m pip install --pre -r requirements.txt
+
+    - name: Install dependencies (Py2.x)
+      if: startswith(matrix.python-version, '2.')
+      run: |
+        python -m pip install -U "pip<21" "setuptools<45" "wheel<38" "Cython>=3.0.11"
 
     - name: Build wheels
       run: make sdist wheel
