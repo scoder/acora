@@ -70,9 +70,15 @@ jobs:
           ls -l /usr/bin/pip* /usr/local/bin/pip*
           which pip
 
-    - name: Install Dependency
+    - name: Install Dependency (Py3.6+)
+      if: startswith(matrix.python-version, '3.') && matrix.python-version != '3.5'
       run: |
         python -m pip install -U pip setuptools && python -m pip install -r requirements.txt
+
+    - name: Install Dependency (Py2.7/3.5)
+      if: matrix.python-version == '2.7' || matrix.python-version == '3.5'
+      run: |
+        python -m pip install -U "pip<21" "setuptools<45" "wheel<38"
 
     - name: Build
       continue-on-error: ${{ matrix.allowed_failure || false }}
