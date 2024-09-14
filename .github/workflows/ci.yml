@@ -156,7 +156,7 @@ jobs:
       matrix:
         #os: [macos-10.15, windows-latest]
         #os: [macos-10.15, macOS-M1]
-        os: [macos-11.0, windows-latest]
+        os: [macos-12.0, windows-latest]
         python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13-dev"]
 
         #include:
