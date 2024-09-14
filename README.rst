@@ -193,6 +193,10 @@ FAQs and recipes
 Changelog
 ---------
 
+* 2.5 [2024-09-14]
+
+  - Update to work with CPython 3.13 by building with Cython 3.0.11.
+
 * 2.4 [2023-09-17]
 
   - Update to work with CPython 3.12 by building with Cython 3.0.2.

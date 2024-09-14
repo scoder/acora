@@ -32,7 +32,7 @@ if IS_PY3:
 
 FILE_BUFFER_SIZE = 32 * 1024
 
-__version__ = "2.4"
+__version__ = "2.5"
 
 
 class PyAcora(object):
